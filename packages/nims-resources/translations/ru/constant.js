@@ -25,6 +25,9 @@ module.exports = {
     'passive-s': 'П',
     // relation types
     allies: 'Союзники',
+    enemy: 'Враги',
+    family: 'Родственники',
+    colleagues: 'Колеги',
     neutral: 'Нейтральные',
     directional: 'Направленные',
     // number filter

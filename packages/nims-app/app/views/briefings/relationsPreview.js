@@ -139,6 +139,8 @@ makeNewRow = R.curry((
         if (rel.starter !== fromCharacter) {
             if (name === 'starterToEnder') attrName = 'enderToStarter';
             if (name === 'enderToStarter') attrName = 'starterToEnder';
+            if (name === 'baby') attrName = 'parent';
+            if (name === 'parent') attrName = 'baby';
         }
         U.setClassByCondition(btn, 'btn-primary', rel.essence.indexOf(attrName) !== -1);
         U.listen(btn, 'click', (event) => {

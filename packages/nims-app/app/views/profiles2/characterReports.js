@@ -50,36 +50,60 @@ exports.makeRelationReportRow = R.curry((characterName, rel) => {
     const secondCharacter = ProjectUtils.get2ndRelChar(characterName, rel);
     U.addEl(qe('.character-name'), U.makeText(secondCharacter));
     const isStarter = rel.starter === characterName;
+    const startToEnd = [characterName, secondCharacter];
+    const endToStart = [characterName, secondCharacter];
 
     if (isStarter) {
         U.setAttr(
-            qe('.direction-starterToEnder'), 'title',
-            L10n.format('briefings', 'starterToEnder', [characterName, secondCharacter])
+            qe('.direction-starterToEnder'), 'title', L10n.format('briefings', 'starterToEnder', startToEnd)
         );
         U.setAttr(
-            qe('.direction-enderToStarter'), 'title',
-            L10n.format('briefings', 'enderToStarter', [secondCharacter, characterName])
+            qe('.direction-enderToStarter'), 'title', L10n.format('briefings', 'enderToStarter', endToStart)
+        );
+        U.setAttr(
+            qe('.direction-parent'), 'title', L10n.format('briefings', 'parent', startToEnd)
+        );
+        U.setAttr(
+            qe('.direction-baby'), 'title', L10n.format('briefings', 'baby', endToStart)
         );
     } else {
         U.setAttr(
-            qe('.direction-starterToEnder'), 'title',
-            L10n.format('briefings', 'starterToEnder', [secondCharacter, characterName])
+            qe('.direction-starterToEnder'), 'title', L10n.format('briefings', 'starterToEnder', endToStart)
         );
         U.setAttr(
-            qe('.direction-enderToStarter'), 'title',
-            L10n.format('briefings', 'enderToStarter', [characterName, secondCharacter])
+            qe('.direction-enderToStarter'), 'title', L10n.format('briefings', 'enderToStarter', startToEnd)
+        );
+        U.setAttr(
+            qe('.direction-parent'), 'title', L10n.format('briefings', 'parent', endToStart)
+        );
+        U.setAttr(
+            qe('.direction-baby'), 'title', L10n.format('briefings', 'baby', startToEnd)
         );
     }
+
+    U.setClassByCondition(qe('.direction-allies'), 'active-item-in-report', R.contains('allies', rel.essence));
+    U.setClassByCondition(qe('.direction-enemy'), 'active-item-in-report', R.contains('enemy', rel.essence));
+    U.setClassByCondition(qe('.direction-family'), 'active-item-in-report', R.contains('family', rel.essence));
+    U.setClassByCondition(qe('.direction-colleagues'), 'active-item-in-report', R.contains('colleagues', rel.essence));
 
     U.setClassByCondition(
         qe('.direction-starterToEnder'), 'active-item-in-report',
         R.contains(isStarter ? 'starterToEnder' : 'enderToStarter', rel.essence)
     );
-    U.setClassByCondition(qe('.direction-allies'), 'active-item-in-report', R.contains('allies', rel.essence));
     U.setClassByCondition(
         qe('.direction-enderToStarter'), 'active-item-in-report',
         R.contains(!isStarter ? 'starterToEnder' : 'enderToStarter', rel.essence)
     );
+    U.setClassByCondition(
+        qe('.direction-baby'), 'active-item-in-report',
+        R.contains(!isStarter ? 'parent' : 'baby', rel.essence)
+    );
+    U.setClassByCondition(
+        qe('.direction-parent'), 'active-item-in-report',
+        R.contains(!isStarter ? 'baby' : 'parent', rel.essence)
+    );
+
+
 
     const finished = isStarter ? rel.starterTextReady : rel.enderTextReady;
 

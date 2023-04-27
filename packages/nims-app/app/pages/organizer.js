@@ -153,7 +153,7 @@ function onDatabaseLoad() {
 
             //               addNavEl(makeL10nButton());
 
-            if (MODE === 'DEV') {
+            /*if (MODE === 'DEV') {
                 if (DEV_OPTS.ENABLE_TESTS) {
                     addNavEl(makeButton('testButton icon-button', 'test', TestUtils.runTests, btnOpts));
                 }
@@ -166,7 +166,7 @@ function onDatabaseLoad() {
                     addNavEl(makeButton('clickAllTabsButton icon-button', 'testTab', testView, btnOpts));
                     addNavEl(makeButton('clickAllTabsButton icon-button', 'showDiff', TestUtils.showDiffExample, btnOpts));
                 }
-            }
+            }*/
 
             if (PRODUCT === 'SERVER') {
                 addNavEl(makeButton('logoutButton icon-button', 'logout', postLogout, btnOpts));

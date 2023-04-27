@@ -16,8 +16,10 @@ See the License for the specific language governing permissions and
  Utils, DBMS, StoryCharacters
  */
 
-const vis = require('vis');
-require('vis/dist/vis.min.css');
+//const vis = require('vis');
+//require('vis/dist/vis.min.css'); 
+const vis = require('../../../../nims-app-core/libs0000/vis-custom.min.js');
+require('../../../../nims-app-core/libs0000/vis.min.css');
 //const R = require('ramda');
 
 //const Constants = require('dbms/constants');
@@ -62,6 +64,7 @@ function initWarning() {
     const button = U.addEl(U.makeEl('button'), U.makeText(L10n.getValue('social-network-remove-resources-warning')));
     U.addEls(warning, [U.makeText(L10n.getValue('social-network-require-resources-warning')), button]);
     U.listen(button, 'click', () => U.addClass(warning, 'hidden'));
+    U.addClass(warning, 'hidden');
 }
 
 
@@ -354,25 +357,65 @@ function getRelationEdges() {
             if (checked('neutral')) {
                 arr.push(R.merge(edgeTmpl, {
                     color: Constants.snRelationColors.neutral,
+                    title: L10n.getValue('briefings-neutral'),
                 }));
             }
         } else {
             if (checked('allies') && R.contains('allies', rel.essence)) {
                 arr.push(R.merge(edgeTmpl, {
                     color: Constants.snRelationColors.allies,
+                    title: L10n.getValue('briefings-allies'),
                 }));
             }
-            if (checked('directional') && R.contains('starterToEnder', rel.essence)) {
+            if (checked('enemy') && R.contains('enemy', rel.essence)) {
                 arr.push(R.merge(edgeTmpl, {
-                    color: Constants.snRelationColors.starterToEnder,
-                    arrows: 'to'
+                    color: Constants.snRelationColors.enemy,
+                    title: L10n.getValue('briefings-enemy'),
                 }));
             }
-            if (checked('directional') && R.contains('enderToStarter', rel.essence)) {
+            if (checked('colleagues') && R.contains('colleagues', rel.essence)) {
                 arr.push(R.merge(edgeTmpl, {
-                    color: Constants.snRelationColors.enderToStarter,
-                    arrows: 'from'
+                    color: Constants.snRelationColors.colleagues,
+                    title: L10n.getValue('briefings-colleagues'),
                 }));
+            }
+            if (checked('work')){
+                if (R.contains('starterToEnder', rel.essence)) {
+                    arr.push(R.merge(edgeTmpl, {
+                        color: Constants.snRelationColors.starterToEnder,
+                        title: CU.strFormat(L10n.getValue('briefings-starterToEnder'),[starter, ender]),
+                        arrows: 'to'
+                    }));
+                }
+                if (R.contains('enderToStarter', rel.essence)) {
+                    arr.push(R.merge(edgeTmpl, {
+                        color: Constants.snRelationColors.enderToStarter,
+                        title: CU.strFormat(L10n.getValue('briefings-enderToStarter'),[starter, ender]),
+                        arrows: 'from'
+                    }));
+                }
+            }
+            if (checked('family')){
+                if (R.contains('baby', rel.essence)) {
+                    arr.push(R.merge(edgeTmpl, {
+                        color: Constants.snRelationColors.baby,
+                        title: CU.strFormat(L10n.getValue('briefings-baby'),[starter, ender]),
+                        arrows: 'from'
+                    }));
+                }
+                if (R.contains('parent', rel.essence)) {
+                    arr.push(R.merge(edgeTmpl, {
+                        color: Constants.snRelationColors.parent,
+                        title: CU.strFormat(L10n.getValue('briefings-parent'),[starter, ender]),
+                        arrows: 'to'
+                    }));
+                }
+                if (R.contains('family', rel.essence)) {
+                    arr.push(R.merge(edgeTmpl, {
+                        color: Constants.snRelationColors.family,
+                        title: L10n.getValue('briefings-family'),
+                    }));
+                }
             }
         }
         return arr;

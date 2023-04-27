@@ -46,7 +46,7 @@ exports.profileFieldTypes = {
 
 exports.relationFields = ['origin', 'starterTextReady', 'enderTextReady', 'essence', 'starter', 'ender'];
 
-exports.relationEssences = ['starterToEnder', 'allies', 'enderToStarter'];
+exports.relationEssences = ['allies', 'enemy', 'family', 'colleagues', 'starterToEnder', 'enderToStarter', 'baby', 'parent'];
 
 exports.playerAccessTypes = ['write', 'readonly', 'hidden'];
 
@@ -314,11 +314,10 @@ exports.socialNetworkOpts = {
             //                    gravitationalConstant : -15000
             gravitationalConstant: -30000,
             //                 gravitationalConstant : -60000
-            //                    springLength: 20,
-            springConstant: 0.1
+                                springLength: 20,
+            //springConstant: 0.05
         },
         stabilization: {
-            //                    iterations : 2500
             iterations: 50
         }
     },
@@ -371,12 +370,17 @@ exports.snActivityColors = {
     defensive: 'green',
     passive: 'grey'
 };
-
+/**Цвета рёбер */
 exports.snRelationColors = {
-    starterToEnder: 'red',
-    enderToStarter: 'red',
-    allies: 'green',
-    neutral: 'grey'
+    neutral: 'grey',                //Знакомые
+    allies: 'green',                //Союзники
+    enemy: 'red',                   //Враги
+    colleagues: 'rgb(255,255,255)', //Коллеги
+    family: 'rgb(255,100,255)',      //Семья
+    starterToEnder: 'red',          //Работодатель
+    enderToStarter: 'red',          //Подчинённый
+    baby: 'rgb(255,150,150)',       //Ребёнок
+    parent: 'rgb(150,255,150)',     //Родитель
 };
 
 exports.snFocusOptions = {

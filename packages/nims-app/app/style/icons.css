@@ -16,20 +16,38 @@ See the License for the specific language governing permissions and
   font-family: Font Awesome\ 5 Free;
   font-weight: 900;
 }
-.starterToEnder:before {
-  content: "\f061";
-}
-.enderToStarter:before {
-  content: "\f060";
-}
 .allies:before {
   content: "\f2b5";
+}
+.enemy:before {
+  content: "\f4fa";
+}
+.family:before {
+  content: "\f500";
+}
+.colleagues:before {
+  content: "\f0c0";
+}
+.starterToEnder:before {
+  content: "\f501";
+}
+.enderToStarter:before {
+  content: "\f508";
+}
+.baby:before {
+  content: "\f77c";
+}
+.parent:before {
+  content: "\f182";
 }
 .directional:before {
   content: "\f060\f061";
 }
 .neutral:before {
   content: "\f2c2";
+}
+.work:before {
+  content: "\f6e3";
 }
 .create:before,
 .add:before {
@@ -82,6 +100,18 @@ See the License for the specific language governing permissions and
 #activityBlock .activity-icon-passive,
 #relationsBlock .neutral  {
   color: grey;
+}
+#relationsBlock .enemy  {
+  color: red;
+}
+#relationsBlock .colleagues  {
+  color: rgb(105, 167, 105);
+}
+#relationsBlock .work  {
+  color: rgb(161, 61, 145);
+}
+#relationsBlock .family  {
+  color: rgb(2, 197, 2);
 }
 
 .unlink:before {
