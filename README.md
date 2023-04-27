@@ -1,3 +1,11 @@
+# WARNING!!! ВНИМАНИЕ!!!
+
+Я позаимствовал проект для его улучшения под свои задачи! 
+Хотя я и постараюсь ни чего не сломать кардинально, я уже решил, что не буду делать перевод на английский. А уж о количестве костылей в коде я даже говорить боюсь. Если хоть кто-то заинтересуется - смотрите официальный репозиторий. Это лишь вариация на тему!!!
+
+I created a fork of the project to improve it to fit my needs!
+I will change it when I want and how I want. If at least someone is interested, see the official repository. This is just a copy!
+
 # What is the project?
 
 This repo contains sources of larpwriter toolkit NIMS project (frontend, core and server).
