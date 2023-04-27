@@ -358,6 +358,7 @@ function getRelationEdges() {
                 arr.push(R.merge(edgeTmpl, {
                     color: Constants.snRelationColors.neutral,
                     title: L10n.getValue('briefings-neutral'),
+                    dashes: [5, 5]
                 }));
             }
         } else {
