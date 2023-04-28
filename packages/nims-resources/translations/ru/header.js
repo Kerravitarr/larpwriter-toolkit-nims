@@ -44,6 +44,10 @@ module.exports = {
     roleGrid: 'Сетка ролей',
     gears: 'Шестерёнка',
     sliders: 'Микшерный пульт',
+
+    dictionary: 'Справочник',
+    'dictionary-settings': 'Настройки',
+
     showDiff: 'Показать историю правок',
     checkConsistency: 'Проверить целостность базы',
     showDbmsConsistencyState: 'Схема целостности модулей базы',

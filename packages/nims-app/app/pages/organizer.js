@@ -53,7 +53,7 @@ const { localAutoSave, runBaseSelectDialog, makeBackup } = require('../front-db/
 
 const {
     Overview, Adaptations, Relations, RoleGrid, Timeline, SocialNetwork, TextSearch,
-    Briefings, LogViewer2, Characters, Players, Stories, ProfileFilter, GroupProfile, AccessManager
+    Briefings,Dictionary, LogViewer2, Characters, Players, Stories, ProfileFilter, GroupProfile, AccessManager
 // } = require('views');
 } = require('../views');
 
@@ -121,6 +121,7 @@ function onDatabaseLoad() {
             addView('stories', 'Stories', Stories);
             addView('adaptations', 'Adaptations', Adaptations);
             addView('briefings', 'Briefings', Briefings);
+            addView('dictionary', 'Dictionary', Dictionary);
             addView('relations', 'Relations', Relations);
 
             addNavSeparator();
