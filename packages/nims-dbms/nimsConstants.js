@@ -370,17 +370,19 @@ exports.snActivityColors = {
     defensive: 'green',
     passive: 'grey'
 };
-/**Цвета рёбер */
+/**Цвета рёбер на графике*/
 exports.snRelationColors = {
     neutral: 'grey',                //Знакомые
     allies: 'green',                //Союзники
-    enemy: 'red',                   //Враги
-    colleagues: 'rgb(255,255,255)', //Коллеги
-    family: 'rgb(255,100,255)',      //Семья
-    starterToEnder: 'red',          //Работодатель
-    enderToStarter: 'red',          //Подчинённый
-    baby: 'rgb(255,150,150)',       //Ребёнок
-    parent: 'rgb(150,255,150)',     //Родитель
+    enemy: 'rgb(255, 0, 0)',        //Враги
+
+    colleagues: 'rgb(0, 255, 0)',       //Коллеги
+    starterToEnder: 'rgb(255, 20, 147)',//Работник-подчинённый
+    enderToStarter: 'rgb(255, 20, 147)',
+
+    family: 'rgb(0, 0, 255)',      //Семья
+    baby: 'rgb(70, 130, 180)',     //Ребёнок
+    parent: 'rgb(70, 130, 180)',   //Ребёнок
 };
 
 exports.snFocusOptions = {

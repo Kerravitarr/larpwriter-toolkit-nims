@@ -337,7 +337,44 @@ function getActivityEdges() {
                 hoverWidth: 4
             })))));
 }
+/**
+ * Создаёт ребро в графе
+ * @param {string} nameFrom имя того, от кого ребро идёт
+ * @param {string} nameTo имя того, к кому ребро идёт
+ * @param {string} nodeName имя этого ребра
+ * @param {Array} dashes опционально. Описывает пунктирную линию
+ * @returns объект, описывающий ребро
+ */
+function makeRelation(nameFrom, nameTo, nodeName, dashes){
+    return {
+        from: CHAR_PREFIX + nameFrom,
+        to: CHAR_PREFIX + nameTo,
+        color: Constants.snRelationColors[nodeName],
+        width: 2,
+        hoverWidth: 4,
+        title: CU.strFormat(L10n.getValue('briefings-' + nodeName),[nameFrom, nameTo]),
+        dashes: dashes
+    };
+}
+/**
+ * Создаёт ребро в графе
+ * @param {string} nameFrom имя того, от кого ребро идёт
+ * @param {string} nameTo имя того, к кому ребро идёт
+ * @param {string} nodeName имя этого ребра
+ * @param {boolean} isFrom указывает, что ребро будет идти отсюда
+ * @param {Array} dashes опционально. Описывает пунктирную линию
+ * @returns объект, описывающий ребро
+ */
+function makeDRelation(nameFrom, nameTo, nodeName, isFrom, dashes){
+    let relation = makeRelation(nameFrom, nameTo, nodeName, dashes);
+    relation.arrows = isFrom ? 'to' : 'from';
+    return relation;
+}
 
+/**
+ * Определяет связи графа
+ * @returns массив элементов графа. Каждый элемент - откуда, куда, какого цвета, какой толщины и width
+ */
 function getRelationEdges() {
     const selectedRelations = U.queryEls('#relationsBlock button.btn-primary').map(U.getAttr(R.__, 'data-value'));
     const { relations } = state;
@@ -346,77 +383,31 @@ function getRelationEdges() {
         const arr = [];
         const { starter } = rel;
         const { ender } = rel;
-        const edgeTmpl = {
-            from: CHAR_PREFIX + starter,
-            to: CHAR_PREFIX + ender,
-            color: Constants.snRelationColors.neutral,
-            width: 2,
-            hoverWidth: 4
-        };
-        if (rel.essence.length === 0) {
-            if (checked('neutral')) {
-                arr.push(R.merge(edgeTmpl, {
-                    color: Constants.snRelationColors.neutral,
-                    title: L10n.getValue('briefings-neutral'),
-                    dashes: [5, 5]
-                }));
-            }
+        /**Все связи персонажа */
+        const essence = rel.essence;
+        if (essence.length === 0) {
+            if (checked('neutral'))
+                arr.push(makeRelation(starter,ender,'neutral',[1, 10]));
         } else {
-            if (checked('allies') && R.contains('allies', rel.essence)) {
-                arr.push(R.merge(edgeTmpl, {
-                    color: Constants.snRelationColors.allies,
-                    title: L10n.getValue('briefings-allies'),
-                }));
-            }
-            if (checked('enemy') && R.contains('enemy', rel.essence)) {
-                arr.push(R.merge(edgeTmpl, {
-                    color: Constants.snRelationColors.enemy,
-                    title: L10n.getValue('briefings-enemy'),
-                }));
-            }
-            if (checked('colleagues') && R.contains('colleagues', rel.essence)) {
-                arr.push(R.merge(edgeTmpl, {
-                    color: Constants.snRelationColors.colleagues,
-                    title: L10n.getValue('briefings-colleagues'),
-                }));
-            }
+            if (checked('allies') && R.contains('allies', essence)) 
+                arr.push(makeRelation(starter,ender,'allies'));
+            if (checked('enemy') && R.contains('enemy', essence)) 
+                arr.push(makeRelation(starter,ender,'enemy'));
             if (checked('work')){
-                if (R.contains('starterToEnder', rel.essence)) {
-                    arr.push(R.merge(edgeTmpl, {
-                        color: Constants.snRelationColors.starterToEnder,
-                        title: CU.strFormat(L10n.getValue('briefings-starterToEnder'),[starter, ender]),
-                        arrows: 'to'
-                    }));
-                }
-                if (R.contains('enderToStarter', rel.essence)) {
-                    arr.push(R.merge(edgeTmpl, {
-                        color: Constants.snRelationColors.enderToStarter,
-                        title: CU.strFormat(L10n.getValue('briefings-enderToStarter'),[starter, ender]),
-                        arrows: 'from'
-                    }));
-                }
+                if (R.contains('starterToEnder', essence)) 
+                    arr.push(makeDRelation(starter,ender,'starterToEnder', true));
+                if (R.contains('colleagues', essence)) 
+                    arr.push(makeRelation(starter,ender,'colleagues'));
+                if (R.contains('enderToStarter', essence)) 
+                    arr.push(makeDRelation(starter,ender,'enderToStarter', false));
             }
             if (checked('family')){
-                if (R.contains('baby', rel.essence)) {
-                    arr.push(R.merge(edgeTmpl, {
-                        color: Constants.snRelationColors.baby,
-                        title: CU.strFormat(L10n.getValue('briefings-baby'),[starter, ender]),
-                        arrows: 'from'
-                    }));
-                }
-                if (R.contains('parent', rel.essence)) {
-                    arr.push(R.merge(edgeTmpl, {
-                        color: Constants.snRelationColors.parent,
-                        title: CU.strFormat(L10n.getValue('briefings-parent'),[starter, ender]),
-                        arrows: 'to'
-                    }));
-                }
-                if (R.contains('family', rel.essence)) {
-                    arr.push(R.merge(edgeTmpl, {
-                        color: Constants.snRelationColors.family,
-                        title: L10n.getValue('briefings-family'),
-                    }));
-                }
+                if (R.contains('baby', essence)) 
+                    arr.push(makeDRelation(starter,ender,'baby', false));
+                if (R.contains('family', essence)) 
+                    arr.push(makeRelation(starter,ender,'family'));
+                if (R.contains('parent', essence)) 
+                    arr.push(makeDRelation(starter,ender,'parent', true));
             }
         }
         return arr;

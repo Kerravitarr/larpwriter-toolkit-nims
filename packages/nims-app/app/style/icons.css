@@ -29,16 +29,16 @@ See the License for the specific language governing permissions and
   content: "\f0c0";
 }
 .starterToEnder:before {
-  content: "\f501";
-}
-.enderToStarter:before {
   content: "\f508";
 }
+.enderToStarter:before {
+  content: "\f501";
+}
 .baby:before {
-  content: "\f77c";
+  content: "\f182";
 }
 .parent:before {
-  content: "\f182";
+  content: "\f77c";
 }
 .directional:before {
   content: "\f060\f061";
@@ -103,9 +103,6 @@ See the License for the specific language governing permissions and
 }
 #relationsBlock .enemy  {
   color: red;
-}
-#relationsBlock .colleagues  {
-  color: rgb(105, 167, 105);
 }
 #relationsBlock .work  {
   color: rgb(161, 61, 145);

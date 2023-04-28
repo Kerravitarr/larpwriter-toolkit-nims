@@ -59,7 +59,7 @@ module.exports = {
     'known-characters': 'Известные по историям персонажи',
     'unknown-characters': 'Неизвестные по историям персонажи',
 
-    // relation editor
+    //Отношения
     'character-name': 'Персонаж/Игрок',
     'direct-relation': 'Отношение',
     'reverse-relation': 'Обратное отношение',
@@ -74,9 +74,9 @@ module.exports = {
     neutral: 'Знакомый',
     work: 'Рабочие',
     starterToEnder: '{0} руководит {1}',
-    enderToStarter: '{1} руководит {0}',
+    enderToStarter: '{0} подчиняется {1}',
     parent: '{0} родитель {1}',
-    baby: '{1} родитель {0}',
+    baby: '{0} ребёнок {1}',
     'are-you-sure-about-relation-removing': 'Вы уверены, что хотите удалить отношение {0}? Все данные связанные с отношением будут удалены безвозвратно.',
     // export status
     'save-preparing': 'Подготовка к выгрузке.',
