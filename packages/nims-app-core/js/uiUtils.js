@@ -117,6 +117,15 @@ exports.addView = function (containers, name, view, opts2) {
 };
 
 // ((exports) => {
+/**
+ * Создаёт всплывающее окно
+ * @param {*} root панель, на которой отобразится окно
+ * @param {*} onAction что сделать, когда пользователь нажмёт на кнопку "создать"
+ * @param {*} opts опции:
+ *             dialogTitle - название окна
+ *             actionButtonTitle - подпись над кнопкой действия
+ * @returns 
+ */
 exports.createModalDialog = (root, onAction, opts) => {
     const commons = '.dialog-commons ';
     const el2 = U.wrapEl('div', U.qte(`${commons} .request-data-dialog-tmpl`));

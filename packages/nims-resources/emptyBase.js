@@ -29,7 +29,7 @@ See the License for the specific language governing permissions and
             Stories: {},
             CharacterProfile: {}
         },
-        Version: '0.7.2',
+        Version: '0.8.0',
         Log: [
             [
                 'user',
@@ -49,6 +49,8 @@ See the License for the specific language governing permissions and
         CharacterProfileStructure: [],
         PlayerProfileStructure: [],
         Players: {},
+        DictionaryStructure: [],
+        Guides:{},
         ProfileBindings: {},
         Gears: {
             nodes: [],

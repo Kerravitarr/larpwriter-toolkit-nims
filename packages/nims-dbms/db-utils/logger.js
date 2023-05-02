@@ -132,7 +132,9 @@ exports.apiInfo = {
     },
     profileConfigurerAPI: {
         getProfileStructure: null,
+        getDictionaryStructure: null,
         createProfileItem: {},
+        createDictionaryItem: {},
         moveProfileItem: {},
         removeProfileItem: {},
         changeProfileItemType: {},

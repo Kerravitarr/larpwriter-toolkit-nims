@@ -35,6 +35,7 @@ See the License for the specific language governing permissions and
                     checkProfileConsistency(this.database, 'Players', 'PlayerProfileStructure'),
                     checkProfileValueConsistency(this.database, 'Characters', 'CharacterProfileStructure'),
                     checkProfileValueConsistency(this.database, 'Players', 'PlayerProfileStructure'),
+                    checkProfileValueConsistency(this.database, 'Guides', 'DictionaryStructure'),
                     checkStoryCharactersConsistency(this.database),
                     checkEventsCharactersConsistency(this.database),
                     checkBindingsConsistency(this.database),

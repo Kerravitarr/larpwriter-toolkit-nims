@@ -250,6 +250,7 @@ const apiInfo = {
     profileConfigurerAPI: {
         getProfileStructure: roleIsOrganizerCheck,
         createProfileItem: organizerIsAdminCheck,
+        createDictionaryItem: organizerIsAdminCheck,
         moveProfileItem: organizerIsAdminCheck,
         removeProfileItem: organizerIsAdminCheck,
         changeProfileItemType: organizerIsAdminCheck,

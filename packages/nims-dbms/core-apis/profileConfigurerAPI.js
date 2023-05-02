@@ -20,11 +20,16 @@ See the License for the specific language governing permissions and
         const {
             R, Constants, Errors, CU, PC
         } = opts;
-
+        /**
+         * В зависимости от типа возвращает название узла JSONа истории
+         * @param {string} type тип
+         * @returns массив, в котором один элемент - строка с названием узла
+         */
         function getPath(type) {
             if (type === 'character') return ['CharacterProfileStructure'];
-            if (type === 'player') return ['PlayerProfileStructure'];
-            return null;
+            else if (type === 'player') return ['PlayerProfileStructure'];
+            else if (type === 'dictionary') return ['DictionaryStructure'];
+            else return null;
         }
 
         const typeCheck = type => PC.chainCheck([PC.isString(type), PC.elementFromEnum(type, Constants.profileTypes)]);
@@ -32,11 +37,24 @@ See the License for the specific language governing permissions and
             PC.elementFromEnum(type, R.keys(Constants.profileFieldTypes))]);
         const playerAccessCheck = type => PC.chainCheck([PC.isString(type),
             PC.elementFromEnum(type, Constants.playerAccessTypes)]);
-
+        /** Возвращает структуру досье. Персонажа или Игрока 
+         * @param {string} type тип - character/player
+         * @returns массив, в котором один элемент - ProfileStructure
+        */
         LocalDBMS.prototype.getProfileStructure = function ({ type } = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck(type), reject, () => {
                     resolve(R.clone(R.path(getPath(type), this.database)));
+                });
+            });
+        };
+        /** Возвращает структуру справочника.
+         * @returns массив, в котором один элемент - DictionaryStructure
+        */
+        LocalDBMS.prototype.getDictionaryStructure = function ({} = {}) {
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    resolve(R.clone(R.path(getPath('dictionary'), this.database)));
                 });
             });
         };
@@ -50,6 +68,36 @@ See the License for the specific language governing permissions and
                 PC.precondition(PC.chainCheck(chain), reject, () => {
                     const container = R.path(getPath(type), this.database);
                     chain = [PC.createEntityCheck2(name, container.map(R.prop('name')), 'entity-lifeless-name', 'entity-of-profile-item'), PC.isInRange(selectedIndex, 0, container.length)];
+                    PC.precondition(PC.chainCheck(chain), reject, () => {
+                        const { value } = Constants.profileFieldTypes[itemType];
+                        const profileItem = {
+                            name,
+                            type: itemType,
+                            value,
+                            doExport: true,
+                            playerAccess: 'hidden',
+                            showInRoleGrid: false
+                        };
+
+                        container.splice(selectedIndex, 0, profileItem);
+                        this.ee.emit('createProfileItem', [{
+                            type, name, itemType, value
+                        }]);
+                        resolve();
+                    });
+                });
+            });
+        };
+        /**Создание поля справочника */
+        LocalDBMS.prototype.createDictionaryItem = function ({
+            type, name, itemType, selectedIndex
+        } = {}) {
+            return new Promise((resolve, reject) => {
+                let chain = [typeCheck(type), PC.isString(name), PC.notEquals(name, 'name'),
+                    PC.isNumber(selectedIndex), itemTypeCheck(itemType)];
+                PC.precondition(PC.chainCheck(chain), reject, () => {
+                    const container = R.path(getPath(type), this.database);
+                    chain = [PC.createEntityCheck2(name, container.map(R.prop('name')), 'entity-lifeless-name', 'entity-of-dictionary-item'), PC.isInRange(selectedIndex, 0, container.length)];
                     PC.precondition(PC.chainCheck(chain), reject, () => {
                         const { value } = Constants.profileFieldTypes[itemType];
                         const profileItem = {

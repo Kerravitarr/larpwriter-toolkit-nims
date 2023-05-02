@@ -247,7 +247,7 @@ const getSelectedRadio = function (el, query) {
 //         callback(...arguments);
 //     };
 // };
-
+/**Набор утилит на всю программу */
 const U = {
     setAttr, nl2array, qees, addEl, clearEl, makeText, getAttr,
     queryEls, queryEl, addClass, listen,

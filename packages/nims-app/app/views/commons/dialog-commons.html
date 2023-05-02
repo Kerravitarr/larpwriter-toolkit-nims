@@ -60,6 +60,7 @@
     </div>
   </template>
   
+  <!--Шаблон для окна "создать поле досье".-->
   <template class="create-profile-item-body">
     <div class="form-group">
       <label class="control-label" l10n-id="profiles-profile-item-name"></label>
@@ -72,6 +73,22 @@
     </div>
     <div class="form-group">
       <label class="control-label" l10n-id="profiles-profile-item-type"></label>
+      <select class="adminOnly form-control create-entity-type-select"></select> 
+    </div>
+  </template>
+  <!--Шаблон для окна "создать поле досье".-->
+  <template class="create-guide-item-body">
+    <div class="form-group">
+      <label class="control-label" l10n-id="dictionary-dialog_item_name"></label>
+      <input class="form-control create-entity-name-input focusable" ></input> 
+    </div>
+    <div class="form-group">
+      <label class="control-label" l10n-id="dictionary-dialog_item_position"></label>
+      <select class="adminOnly form-control create-entity-position-select">
+      </select> 
+    </div>
+    <div class="form-group">
+      <label class="control-label" l10n-id="dictionary-dialog_item_type"></label>
       <select class="adminOnly form-control create-entity-type-select"></select> 
     </div>
   </template>

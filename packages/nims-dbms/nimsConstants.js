@@ -75,8 +75,8 @@ exports.ownedEntityTypes2 = ['characters', 'players', 'stories', 'groups'];
 exports.metaInfoStrings = ['name', 'description'];
 
 exports.metaInfoDates = ['date', 'preGameDate'];
-
-exports.profileTypes = ['character', 'player'];
+/**Возможные объекты, поддерживающие создание нового поля */
+exports.profileTypes = ['character', 'player', 'dictionary'];
 
 exports.groupProfileStructure = [{
     name: 'filterModel',

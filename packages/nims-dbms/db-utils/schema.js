@@ -27,6 +27,7 @@ See the License for the specific language governing permissions and
 // ((callback) => {
 let makeProfileStructureItemSchema;
 
+/**Создаёт схему всей БД */
 exports.getSchema = function (base) {
     const schema = {
         title: 'Larpwriter Toolkit NIMS base',
@@ -39,8 +40,10 @@ exports.getSchema = function (base) {
     const CharacterProfileStructure = getProfileSettingsSchema();
     const PlayerProfileStructure = CharacterProfileStructure;
     const Log = getLogSchema();
+    const DictionaryStructure = getDictionaryStructureSchema();
     const Characters = getProfileSchema(base.CharacterProfileStructure);
     const Players = getProfileSchema(base.PlayerProfileStructure);
+    const Guides = getProfileSchema(base.DictionaryStructure);
     const ProfileBindings = getProfileBindings(base.Characters, base.Players);
     const Stories = getStoriesSchema(base.Characters);
     const Groups = getGroupsSchema(base.CharacterProfileStructure, base.PlayerProfileStructure);
@@ -52,7 +55,7 @@ exports.getSchema = function (base) {
     if (base.ManagementInfo) {
         ManagementInfo = getManagementInfoSchema(
             base.ManagementInfo, base.Characters, base.Stories,
-            base.Groups, base.Players
+            base.Groups, base.Players, base.Guides
         );
     }
 
@@ -60,8 +63,10 @@ exports.getSchema = function (base) {
         Meta,
         CharacterProfileStructure,
         PlayerProfileStructure,
+        DictionaryStructure,
         Characters,
         Players,
+        Guides,
         ProfileBindings,
         Stories,
         Version: {
@@ -76,17 +81,19 @@ exports.getSchema = function (base) {
         Relations,
         ManagementInfo
     };
-
-    schema.required = ['Meta', 'CharacterProfileStructure', 'PlayerProfileStructure', 'Version', 'Characters',
-        'Players', 'ProfileBindings', 'Stories', 'Log', 'Groups', 'InvestigationBoard', 'Relations', 'Gears', 'Sliders'];
+    /**Какая структура у БД */
+    schema.required = ['Meta','Version', 'CharacterProfileStructure', 'Characters','Relations', 'PlayerProfileStructure','Players', 'DictionaryStructure',  
+        'Guides', 'ProfileBindings', 'Stories', 'Groups', 'InvestigationBoard',  'Gears', 'Sliders', 'Log'];
     schema.additionalProperties = false;
 
     schema.moduleList = R.keys(schema.properties);
+    /**Какие объекты какую структуру имеют */
     schema.moduleDeps = [
         ['InvestigationBoard', 'Groups'],
         ['Groups', 'CharacterProfileStructure'],
         ['Groups', 'PlayerProfileStructure'],
         ['Players', 'PlayerProfileStructure'],
+        ['Guides', 'DictionaryStructure'],
         ['Characters', 'CharacterProfileStructure'],
 
         ['ManagementInfo', 'Groups'],
@@ -222,6 +229,16 @@ function getProfileSettingsSchema() {
             }]
         }
     };
+}
+/**
+ * Возвращает схему справочника
+ * @returns 
+ */
+function getDictionaryStructureSchema() {
+    let struct = getProfileSettingsSchema();
+    struct.title = 'DictionaryStructure';
+    struct.description = 'Описывает настройки справочника';
+    return struct;
 }
 
 function getLogSchema() {

@@ -1315,7 +1315,7 @@ exports.data = {
         "selectedFilter": "adaptationFilterByCharacter"
       }
     },
-    "Version": "0.7.2",
+    "Version": "0.8.0",
     "Log": [
       [
         "user",
@@ -3544,6 +3544,7 @@ exports.data = {
         "showInRoleGrid": false
       }
     ],
+    "DictionaryStructure" : [],
     "PlayerProfileStructure": [
       {
         "name": "Город",
@@ -3584,6 +3585,7 @@ exports.data = {
         "Способ связи": ""
       }
     },
+    "Guides":{},
     "ProfileBindings": {
       "Арагорн": "Аркадий",
       "Арвен": "Белла"

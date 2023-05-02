@@ -21,15 +21,27 @@ See the License for the specific language governing permissions and
             R, Constants, Errors, addListener, CU, PC
         } = opts;
 
+        /**
+         * Указатель на узел в JSONе, где лежат данные
+         * @param {string} type название типа
+         * @returns узел, описывающий сами данные. Тут дадут реальный объект
+         */
         function getPath(type) {
             if (type === 'character') return ['Characters'];
-            if (type === 'player') return ['Players'];
-            return null;
+            else if (type === 'player') return ['Players'];
+            else if (type === 'dictionary') return ['Guides'];
+            else return null;
         }
+        /**
+         * Указатель на узел в JSONе, где лежит определённый тип данных
+         * @param {string} type название типа
+         * @returns узел. Тут дадут описание поля реального объекта
+         */
         function getStructurePath(type) {
             if (type === 'character') return ['CharacterProfileStructure'];
-            if (type === 'player') return ['PlayerProfileStructure'];
-            return null;
+            else if (type === 'player') return ['PlayerProfileStructure'];
+            else if (type === 'dictionary') return ['DictionaryStructure'];
+            else return null;
         }
 
         const typeCheck = type => PC.chainCheck([PC.isString(type), PC.elementFromEnum(type, Constants.profileTypes)]);
