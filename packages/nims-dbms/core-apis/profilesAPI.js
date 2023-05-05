@@ -74,7 +74,11 @@ See the License for the specific language governing permissions and
             });
         };
 
-        // profiles
+        /**
+         * Создаёт нового Игрока или Персонажа
+         * @param {string} type тип, что именно создаёмю [character,player]
+         * @param {string} characterName имя этого негодника
+         */
         LocalDBMS.prototype.createProfile = function ({ type, characterName } = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck(type), reject, () => {
@@ -101,7 +105,33 @@ See the License for the specific language governing permissions and
                 });
             });
         };
-        // profiles
+
+        /**
+         * Создаёт новый справочник
+         * @param {string} name название справочника
+         */
+        LocalDBMS.prototype.createGuide = function ({ name } = {}) {
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    const container = R.path(getPath('dictionary'), this.database);
+                    PC.precondition(PC.createEntityCheck2(name, R.keys(container), 'entity-living-name', `entity-of-dictionary`), reject, () => {
+                        const newGuide = {
+                            name: name
+                        };
+                        R.path(getPath('dictionary'), this.database)[name] = newGuide;
+                        this.ee.emit('createGuide', arguments);
+                        resolve();
+                    });
+                });
+            });
+        };
+        /**
+         * Переименовывает Игрока или Персонажа
+         * @param {string} type тип, что именно переименовываем [character,player]
+         * @param {string} fromName имя, под которым объект сейчас находится в БД
+         * @param {string} toName имя, которое теперь объект будет гордо носить
+         * @returns 
+         */
         LocalDBMS.prototype.renameProfile = function ({ type, fromName, toName } = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck(type), reject, () => {
@@ -118,7 +148,33 @@ See the License for the specific language governing permissions and
             });
         };
 
-        // profiles
+        /**
+         * Переименовывает справочник
+         * @param {string} fromName имя, под которым объект сейчас находится в БД
+         * @param {string} toName имя, которое теперь объект будет гордо носить
+         */
+        LocalDBMS.prototype.renameGuide = function ({fromName, toName } = {}) {
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    const container = R.path(getPath('dictionary'), this.database);
+                    PC.precondition(PC.renameEntityCheck(fromName, toName, R.keys(container)), reject, () => {
+                        const data = container[fromName];
+                        data.name = toName;
+                        container[toName] = data;
+                        delete container[fromName];
+                        this.ee.emit('renameGuide', arguments);
+                        resolve();
+                    });
+                });
+            });
+        };
+
+        /**
+         * Удаляет Игрока или Персонажа
+         * @param {string} type тип, что именно удаляем [character,player]
+         * @param {string} characterName его имя
+         * @returns 
+         */
         LocalDBMS.prototype.removeProfile = function ({ type, characterName } = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck(type), reject, () => {
@@ -131,6 +187,27 @@ See the License for the specific language governing permissions and
                 });
             });
         };
+
+        /**
+         * Удаляет справочник
+         * @param {string} name его имя
+         * @returns 
+         */
+        LocalDBMS.prototype.removeGuide = function ({ name } = {}) {
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    const container = R.path(getPath('dictionary'), this.database);
+                    PC.precondition(PC.removeEntityCheck(name, R.keys(container)), reject, () => {
+                        delete container[name];
+                        this.ee.emit('removeGuide', arguments);
+                        resolve();
+                    });
+                });
+            });
+        };
+
+
+        
 
         const typeSpecificPreconditions = (itemType, itemDesc, value) => {
             switch (itemType) {

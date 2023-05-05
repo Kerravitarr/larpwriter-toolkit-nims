@@ -85,8 +85,11 @@ exports.apiInfo = {
         getProfile: null,
         getAllProfiles: null,
         createProfile: {},
+        createGuide: {},
         renameProfile: {},
+        renameGuide: {},
         removeProfile: {},
+        removeGuide: {},
         updateProfileField: {} // text
     },
     profileBindingAPI: {
@@ -132,7 +135,7 @@ exports.apiInfo = {
     },
     profileConfigurerAPI: {
         getProfileStructure: null,
-        getDictionaryStructure: null,
+        getGuides: null,
         createProfileItem: {},
         createDictionaryItem: {},
         moveProfileItem: {},

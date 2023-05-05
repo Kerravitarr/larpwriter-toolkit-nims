@@ -3544,7 +3544,6 @@ exports.data = {
         "showInRoleGrid": false
       }
     ],
-    "DictionaryStructure" : [],
     "PlayerProfileStructure": [
       {
         "name": "Город",

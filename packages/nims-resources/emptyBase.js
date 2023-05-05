@@ -49,7 +49,6 @@ See the License for the specific language governing permissions and
         CharacterProfileStructure: [],
         PlayerProfileStructure: [],
         Players: {},
-        DictionaryStructure: [],
         Guides:{},
         ProfileBindings: {},
         Gears: {

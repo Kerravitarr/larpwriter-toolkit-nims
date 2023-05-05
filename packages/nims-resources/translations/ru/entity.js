@@ -4,6 +4,7 @@ module.exports = {
     'lifeless-name': 'Название',
     'of-group': 'группы',
     'of-profile-item': 'поля досье',
+    'of-dictionary': 'справочника',
     'of-dictionary-item': 'поля справочника',
     'of-character': 'персонажа',
     'of-player': 'игрока',

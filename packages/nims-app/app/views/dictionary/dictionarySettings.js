@@ -4,17 +4,19 @@ Autor: Terran
 
 /**Корневой узел старинцы */
 const root = '.dictionary-settings-tab ';
-/**Справочники в системе */
-let guides = [
-    //name - название справочника
-    //fields - поля справочника
-    /*{
-         name: 'Босы',
-         fields: [],
-     }*/
-];
 
 exports.init = () => {
+
+    const createGuideDialog = UI.createModalDialog(
+        root,
+        createGuide, {
+            bodySelector: 'modal-prompt-body',
+            dialogTitle: `dictionary-create-title`,
+            actionButtonTitle: 'common-create',
+        }
+    );
+    U.listen(U.qe(`${root}.dictionary-create`), 'click', () => createGuideDialog.showDlg());
+
     exports.content = U.queryEl(root);
 };
 
@@ -23,93 +25,124 @@ exports.refresh = () => {
     U.clearEl(U.queryEl('#dictionarys'));
 
     const content = U.clearEl(U.queryEl('#dictionarys'));
-    let index = 0;
-    function buildContentInner() {
-        if (index < guides.length) {
-            index++;
-            buildContentInner();
-        } else {
-            guides.forEach((guide) => {
-                U.addEl(content, makePanel(U.makeText(guide.name), makeDictionary(guide),
-                ));
-            });
-        }
-    }
-    buildContentInner();
-    /*
     Promise.all([
-        DBMS.getDictionaryStructure({})
+        DBMS.getGuides({})
     ]).then((results) => {
-        const [allProfileSettings] = results;
-        U.hideEl(U.queryEl(`${root} .alert`), allProfileSettings.length !== 0);
-        U.hideEl(U.queryEl(`${root} table`), allProfileSettings.length === 0);
+        const [guides] = results;
+        const allGuides = Object.entries(guides);
+        //Сортируем словари по имени
+        allGuides.sort(([p1, a], [p2, b]) => a.name.localeCompare(b.name));
 
-        const arr = allProfileSettings.map(R.compose(CU.strFormat(L10n.getValue('common-set-item-before')), R.append(R.__, []), R.prop('name')));
-        arr.push(L10n.getValue('common-set-item-as-last'));
+        //Показать предупреждение, если нет справочников
+        U.hideEl(U.queryEl(`${root} .alert`), allGuides.length !== 0);
 
-        const positionSelectors = [U.queryEl(`${root} .create-entity-position-select`),
-            U.queryEl(`${root} .move-entity-position-select`)];
-        positionSelectors.map(U.clearEl).map(U.fillSelector(R.__, U.arr2Select(arr))).map(U.setProp(R.__, 'selectedIndex', allProfileSettings.length));
-
-        const table = U.clearEl(U.queryEl(`${root}.profile-config-container`));
-
-        try {
-            U.addEls(table, allProfileSettings.map(getInput(type)));
-        } catch (err1) {
-            UI.handleError(err1); return;
+        let index = 0;
+        function buildContentInner() {
+            if (index < allGuides.length) {
+                index++;
+                buildContentInner();
+            } else {
+                allGuides.forEach(([nameGuide, guide]) => {
+                    U.addEl(content, makePanel(U.makeText(nameGuide), makeDictionary(guide)));
+                });
+            }
         }
-        UI.enable(exports.content, 'adminOnly', true);
+        buildContentInner();
     }).catch(UI.handleError);
-    */
 };
 
 
 var fillItemTypesSel = sel => U.fillSelector(sel, UI.constArr2Select(R.keys(Constants.profileFieldTypes)));
 /**Создаём описание словаря */
 function makeDictionary(guide) {
+    if(guide.scheme == undefined)
+        guide.scheme = [];
+
     const rootDiv = U.makeEl('div');
-    if(guide.fields == undefined || guide.fields.length == 0){
-        //Диалог добавления полей
-        const createProfileItemDialog = UI.createModalDialog(
-            `${root}`,
-            createProfileItem, 
-            {
-                bodySelector: 'create-guide-item-body',
-                dialogTitle: 'dictionary-item_field_create',
-                actionButtonTitle: 'common-create',
-                initBody: (body) => {
-                    const sel = U.clearEl(U.qee(body, '.create-entity-type-select'));
-                    const fillMainSel = () => { fillItemTypesSel(U.clearEl(sel)); };
-                    fillMainSel();
-                    L10n.onL10nChange(fillMainSel);
-                }
+    //Диалог переименовния словаря
+    const renameGuideDialog = UI.createModalDialog(
+        root,
+        renameGuide, {
+        bodySelector: 'modal-prompt-body',
+        dialogTitle:  `dictionary-rename_title`,
+        actionButtonTitle: 'common-rename',
+    });
+    U.qee(renameGuideDialog, '.entity-input').value = renameGuideDialog.fromName = guide.name;
+
+    //Диалог добавления полей
+    const createProfileItemDialog = UI.createModalDialog(
+        root,
+        createProfileItem, 
+        {
+            bodySelector: 'create-guide-item-body',
+            dialogTitle: 'dictionary-item_field_create',
+            actionButtonTitle: 'common-create',
+            initBody: (body) => {
+                const sel = U.clearEl(U.qee(body, '.create-entity-type-select'));
+                const fillMainSel = () => { fillItemTypesSel(U.clearEl(sel)); };
+                fillMainSel();
+                L10n.onL10nChange(fillMainSel);
             }
-        );
+        }
+    );
 
 
-        //Сообщение об ошибке
-        let alert = U.qmte(`${root}.alert-tmpl`);
-        //Создаём слушателя на событие "новое поле словаря"
-        U.listen(alert, 'click', () => createProfileItemDialog.showDlg());
-        //Вставляем тексты
-        L10n.localizeStatic(alert);
-        return U.addEl(rootDiv, alert);
-    } else {
+    //Рабочая панель
+    let panel = U.qmte(`${root}.tablePanel-tmpl`);
 
-    }
+    //Создаём слушателей на кнопки
+    U.listen(U.qee(panel, '.create'), 'click', () => createProfileItemDialog.showDlg());
+    U.listen(U.qee(panel, '.rename'), 'click', () => renameGuideDialog.showDlg());
+    U.listen(U.qee(panel, '.remove'), 'click', () => {
+        UI.confirm(CU.strFormat(L10n.getValue('dictionary-remove_text'), [guide.name]), () => {
+            DBMS.removeGuide({ name: guide.name }).then(() => {
+                exports.refresh();
+            }).catch(UI.handleError);
+        });
+    });
+
+    //Показать предупреждение, если нет полей
+    U.hideEl(U.qee(panel, '.alert') , guide.scheme.length !== 0);
+    //Показать таблицу, если поля всё-же есть
+    U.hideEl(U.qee(panel, '.table') , guide.scheme.length == 0);
+    
+    const arr = guide.scheme.map(R.compose(CU.strFormat(L10n.getValue('common-set-item-before')), R.append(R.__, []), R.prop('name')));
+    arr.push(L10n.getValue('common-set-item-as-last'));
 
 
 
-    let input = U.qmte(`${root} .dictionary-header-tmpl`);
-    U.addEls(U.qee(input, '.text'));
 
 
-    const span = U.addEl(U.makeEl('textarea'), U.makeText("С текстом"));
-    U.setAttr(span, 'disabled', 'disabled');
-    U.addClasses(span, ['briefingTextSpan', 'form-control']);
-    return U.addEl(rootDiv, span);
+    //Вставляем тексты
+    L10n.localizeStatic(panel);
+    return U.addEl(rootDiv, panel);
 }
 
+function createGuide(dialog) {
+    return () => {
+        const input = U.qee(dialog, '.entity-input');
+        const value = input.value.trim();
+
+       DBMS.createGuide({ name: value }).then(() => {
+            input.value = '';
+            dialog.hideDlg();
+            exports.refresh();
+        }).catch((err) => UI.setError(dialog, err));
+    };
+}
+function renameGuide(dialog) {
+    return () => {
+        const toInput = U.qee(dialog, '.entity-input');
+        const { fromName } = dialog;
+        const toName = toInput.value.trim();
+
+        DBMS.renameGuide({fromName,toName}).then(() => {
+            toInput.value = '';
+            dialog.hideDlg();
+            exports.refresh();
+        }).catch((err) => UI.setError(dialog, err));
+    };
+}
 
 function createProfileItem(dialog) {
     return () => {

@@ -27,7 +27,7 @@ See the License for the specific language governing permissions and
 // ((callback) => {
 let makeProfileStructureItemSchema;
 
-/**Создаёт схему всей БД */
+/**Создаёт схему всей БД. А base - это сама база данных */
 exports.getSchema = function (base) {
     const schema = {
         title: 'Larpwriter Toolkit NIMS base',
@@ -40,10 +40,9 @@ exports.getSchema = function (base) {
     const CharacterProfileStructure = getProfileSettingsSchema();
     const PlayerProfileStructure = CharacterProfileStructure;
     const Log = getLogSchema();
-    const DictionaryStructure = getDictionaryStructureSchema();
     const Characters = getProfileSchema(base.CharacterProfileStructure);
     const Players = getProfileSchema(base.PlayerProfileStructure);
-    const Guides = getProfileSchema(base.DictionaryStructure);
+    const Guides = getGuidesSchema(base.Guides);
     const ProfileBindings = getProfileBindings(base.Characters, base.Players);
     const Stories = getStoriesSchema(base.Characters);
     const Groups = getGroupsSchema(base.CharacterProfileStructure, base.PlayerProfileStructure);
@@ -55,7 +54,7 @@ exports.getSchema = function (base) {
     if (base.ManagementInfo) {
         ManagementInfo = getManagementInfoSchema(
             base.ManagementInfo, base.Characters, base.Stories,
-            base.Groups, base.Players, base.Guides
+            base.Groups, base.Players
         );
     }
 
@@ -63,7 +62,6 @@ exports.getSchema = function (base) {
         Meta,
         CharacterProfileStructure,
         PlayerProfileStructure,
-        DictionaryStructure,
         Characters,
         Players,
         Guides,
@@ -81,9 +79,9 @@ exports.getSchema = function (base) {
         Relations,
         ManagementInfo
     };
-    /**Какая структура у БД */
-    schema.required = ['Meta','Version', 'CharacterProfileStructure', 'Characters','Relations', 'PlayerProfileStructure','Players', 'DictionaryStructure',  
-        'Guides', 'ProfileBindings', 'Stories', 'Groups', 'InvestigationBoard',  'Gears', 'Sliders', 'Log'];
+    /**Какая структура у БД. Какие поля точно будут*/
+    schema.required = ['Meta', 'Version', 'CharacterProfileStructure', 'Characters', 'Relations', 'PlayerProfileStructure', 'Players',
+        'Guides', 'ProfileBindings', 'Stories', 'Groups', 'InvestigationBoard', 'Gears', 'Sliders', 'Log'];
     schema.additionalProperties = false;
 
     schema.moduleList = R.keys(schema.properties);
@@ -93,7 +91,7 @@ exports.getSchema = function (base) {
         ['Groups', 'CharacterProfileStructure'],
         ['Groups', 'PlayerProfileStructure'],
         ['Players', 'PlayerProfileStructure'],
-        ['Guides', 'DictionaryStructure'],
+        ['Guides', 'Guides'],
         ['Characters', 'CharacterProfileStructure'],
 
         ['ManagementInfo', 'Groups'],
@@ -239,6 +237,43 @@ function getDictionaryStructureSchema() {
     struct.title = 'DictionaryStructure';
     struct.description = 'Описывает настройки справочника';
     return struct;
+}
+/**Возвращает структуру справочников на основании переданного параметра */
+function getGuidesSchema(Guides) {
+    //Базовая схема
+    const schema = {
+        title: 'GuidesSchema',
+        description: 'Набор справочников',
+        type: 'object',
+        properties: {},
+        required: [],
+        additionalProperties: false
+    };
+    //Описываем каждый справочник
+    Object.entries(Guides).forEach(([nameGuide, guide]) => {
+        const schemaGuide = {
+            title: 'schemaGuide',
+            description: 'Справочник',
+            type: 'object',
+            properties: {
+                name: { type: 'string' },
+                scheme: getDictionaryStructureSchema(),
+                guide: {
+                    type: 'array',
+                    items: getDictionaryRowSchema(guide.scheme)
+                }
+            },
+            required: ['name', 'scheme', 'guide'],
+            additionalProperties: false
+        };
+        schemaGuide.moduleList = R.keys(schemaGuide.properties);
+        /*schemaGuide.moduleDeps = [
+            ['guide', 'scheme']
+        ];*/
+        schema.properties[nameGuide] = schemaGuide;
+        schema.required.push(nameGuide);
+    });
+    return schema;
 }
 
 function getLogSchema() {
@@ -563,111 +598,165 @@ makeProfileStructureItemSchema = R.curry((prefix, item) => {
 
     let properties;
     switch (item.type) {
-    case 'text':
-    case 'string':
-        data.properties.regexString = {
-            type: 'string',
-            minLength: 0
-        };
-        data.required.push('regexString');
-        break;
-    case 'number':
-        data.properties.num = {
-            type: 'number'
-        };
-        data.properties.condition = {
-            type: 'string',
-            enum: ['greater', 'lesser', 'equal']
-        };
-        data.required.push('num');
-        data.required.push('condition');
-        break;
-    case 'checkbox':
-        data.properties.selectedOptions = {
-            type: 'object',
-            properties: {
-                false: {},
-                true: {}
-            },
-            additionalProperties: false
-        };
-        data.required.push('selectedOptions');
-        break;
-    case 'enum':
-        properties = item.value.split(',').reduce((result, item2) => {
-            result[item2] = {};
-            return result;
-        }, {});
-        data.properties.selectedOptions = {
-            type: 'object',
-            properties,
-            additionalProperties: false
-        };
-        data.required.push('selectedOptions');
-        break;
-    case 'multiEnum':
-        data.properties.condition = {
-            type: 'string',
-            enum: ['every', 'equal', 'some']
-        };
-        properties = item.value.split(',').reduce((result, item2) => {
-            result[item2] = {};
-            return result;
-        }, {});
-        data.properties.selectedOptions = {
-            type: 'object',
-            properties,
-            additionalProperties: false
-        };
-        data.required.push('selectedOptions');
-        data.required.push('condition');
-        break;
-    default:
-        console.log(`Unexpected type ${item.type}`);
+        case 'text':
+        case 'string':
+            data.properties.regexString = {
+                type: 'string',
+                minLength: 0
+            };
+            data.required.push('regexString');
+            break;
+        case 'number':
+            data.properties.num = {
+                type: 'number'
+            };
+            data.properties.condition = {
+                type: 'string',
+                enum: ['greater', 'lesser', 'equal']
+            };
+            data.required.push('num');
+            data.required.push('condition');
+            break;
+        case 'checkbox':
+            data.properties.selectedOptions = {
+                type: 'object',
+                properties: {
+                    false: {},
+                    true: {}
+                },
+                additionalProperties: false
+            };
+            data.required.push('selectedOptions');
+            break;
+        case 'enum':
+            properties = item.value.split(',').reduce((result, item2) => {
+                result[item2] = {};
+                return result;
+            }, {});
+            data.properties.selectedOptions = {
+                type: 'object',
+                properties,
+                additionalProperties: false
+            };
+            data.required.push('selectedOptions');
+            break;
+        case 'multiEnum':
+            data.properties.condition = {
+                type: 'string',
+                enum: ['every', 'equal', 'some']
+            };
+            properties = item.value.split(',').reduce((result, item2) => {
+                result[item2] = {};
+                return result;
+            }, {});
+            data.properties.selectedOptions = {
+                type: 'object',
+                properties,
+                additionalProperties: false
+            };
+            data.required.push('selectedOptions');
+            data.required.push('condition');
+            break;
+        default:
+            console.log(`Unexpected type ${item.type}`);
     }
     return data;
 });
-
+/**Схема пользователя или Персонажа, в зависимости от переданного параметра */
 function getProfileSchema(profileSettings) {
+    //Установление параметров по умолчанию. У всех будет только имя
     const characterProperties = {
         name: {
             type: 'string'
         }
     };
-    let value;
+    //Для каждого поля структуры
     profileSettings.forEach((item) => {
+        let value;
         switch (item.type) {
-        case 'text':
-        case 'string':
-        case 'multiEnum': // it is hard to check multiEnum with schema. There is second check in consistency checker.
-            value = {
-                type: 'string'
-            };
-            break;
-        case 'checkbox':
-            value = {
-                type: 'boolean'
-            };
-            break;
-        case 'number':
-            value = {
-                type: 'number'
-            };
-            break;
-        case 'enum':
-            value = {
-                type: 'string',
-                enum: item.value.split(',').map(R.trim)
-            };
-            break;
-        default:
-            console.log(`Unexpected type ${item.type}`);
+            case 'text':
+            case 'string':
+            case 'multiEnum': // it is hard to check multiEnum with schema. There is second check in consistency checker.
+                value = {
+                    type: 'string'
+                };
+                break;
+            case 'checkbox':
+                value = {
+                    type: 'boolean'
+                };
+                break;
+            case 'number':
+                value = {
+                    type: 'number'
+                };
+                break;
+            case 'enum':
+                value = {
+                    type: 'string',
+                    enum: item.value.split(',').map(R.trim)
+                };
+                break;
+            default:
+                console.log(`Unexpected type ${item.type}`);
         }
+        //Добавляем соответствующее поле 
         characterProperties[item.name] = value;
     });
 
     //        console.log(characterProperties);
+    //И вот итоговая схема - объект с полями
+    const schema = {
+        type: 'object',
+        additionalProperties: {
+            type: 'object',
+            properties: characterProperties,
+            required: Object.keys(characterProperties),
+            additionalProperties: false
+        }
+    };
+    return schema;
+}
+/**Схема пользователя или Персонажа, в зависимости от переданного параметра */
+function getDictionaryRowSchema(profileSettings) {
+    //Установление параметров по умолчанию. У всех будет только имя
+    const characterProperties = {};
+    //Для каждого поля структуры
+    profileSettings.forEach((item) => {
+        let value;
+        switch (item.type) {
+            case 'text':
+            case 'string':
+            case 'multiEnum': // it is hard to check multiEnum with schema. There is second check in consistency checker.
+                value = {
+                    type: 'string'
+                };
+                break;
+            case 'checkbox':
+                value = {
+                    type: 'boolean'
+                };
+                break;
+            case 'number':
+                value = {
+                    type: 'number'
+                };
+                break;
+            case 'enum':
+                value = {
+                    type: 'string',
+                    enum: item.value.split(',').map(R.trim)
+                };
+                break;
+            default:
+                console.log(`Unexpected type ${item.type}`);
+        }
+        //Добавляем соответствующее поле 
+        characterProperties[item.name] = value;
+    });
 
+    //        console.log(characterProperties);
+    //И вот итоговая схема - объект с полями
     const schema = {
         type: 'object',
         additionalProperties: {

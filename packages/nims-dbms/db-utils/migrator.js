@@ -213,7 +213,6 @@ exports.migrate = (data) => {
         data.Version = '0.7.2';
     }
     if (data.Version === '0.7.2') {
-        data.DictionaryStructure = [];
         data.Guides = {};
         data.Version = '0.8.0';
     }

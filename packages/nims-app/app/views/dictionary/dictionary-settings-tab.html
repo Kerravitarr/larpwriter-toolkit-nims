@@ -3,44 +3,38 @@
   <div class="panel panel-default">
     <div class="panel-body first-panel">
       <div class="flex-row entity-toolbar">
-        <button class="btn btn-default btn-reduced fa-icon create dictionary flex-0-0-auto icon-padding" 
+        <button class="btn btn-default btn-reduced fa-icon create dictionary-create flex-0-0-auto icon-padding" 
         l10n-title="dictionary-create-title"><span l10n-id="dictionary-create"></span></button>
-        <div class="alert alert-info no-dictionary-items " l10n-id="dictionary-alert_no_items"></div>
       </div>
+      <div class="alert alert-info no-dictionary-items " l10n-id="dictionary-alert_no_items"></div>
     </div>
   </div>
   <div id="dictionarys" ></div>
 
-  <!--Шаблон предупреждения об ошибке -->
-  <template class="alert-tmpl">
+  <!--Шаблон словаря -->
+  <template class="tablePanel-tmpl">
     <div>
       <div class="entity-management">
+        <div>
+          <button class="btn btn-default btn-reduced fa-icon rename" l10n-title="dictionary-item_field_rename"></button>
+          <button class="btn btn-default btn-reduced fa-icon remove" l10n-title="dictionary-item_field_remove"></button>
+        </div>
         <div>
           <button class="btn btn-default btn-reduced fa-icon create" l10n-title="dictionary-item_field_create"></button>
         </div>
       </div>
       <div class="alert alert-info no-player-profile margin-bottom-8" l10n-id="dictionary-alert_no_data"></div>
+      <table class="table table-bordered" style="width: auto;">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th l10n-id="dictionary-field_table_item_name"></th>
+            <th l10n-id="dictionary-field_table_item_type"></th>
+            <th l10n-id="dictionary-field_table_item_default_value"></th>
+          </tr>
+        </thead>
+        <tbody class="dictionary_field_table_item_config_container"></tbody>
+      </table>
     </div>
-  </template>
-
-  <!--Шаблон одной строки -->
-  <template class="dictionary-header-tmpl">
-    <div class="entity-management">
-      <div>
-        <button class="btn btn-default btn-reduced fa-icon create" l10n-title="dictionary_field_create"></button>
-      </div>
-    </div>
-    <div class="alert alert-info"></div>
-    <table class="table table-bordered" style="width: auto;">
-      <thead>
-        <tr>
-          <th>№</th>
-          <th l10n-id="dictionary_field_table_item_name"></th>
-          <th l10n-id="dictionary_field_table_item_type"></th>
-          <th l10n-id="dictionary_field_table_item_default_value"></th>
-        </tr>
-      </thead>
-      <tbody class="dictionary_field_table_item_config_container"></tbody>
-    </table>
   </template>
 </div>

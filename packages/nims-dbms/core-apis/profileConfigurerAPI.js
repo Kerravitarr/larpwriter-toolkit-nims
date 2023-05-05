@@ -28,7 +28,7 @@ See the License for the specific language governing permissions and
         function getPath(type) {
             if (type === 'character') return ['CharacterProfileStructure'];
             else if (type === 'player') return ['PlayerProfileStructure'];
-            else if (type === 'dictionary') return ['DictionaryStructure'];
+            else if (type === 'dictionary') return ['Guides'];
             else return null;
         }
 
@@ -37,9 +37,10 @@ See the License for the specific language governing permissions and
             PC.elementFromEnum(type, R.keys(Constants.profileFieldTypes))]);
         const playerAccessCheck = type => PC.chainCheck([PC.isString(type),
             PC.elementFromEnum(type, Constants.playerAccessTypes)]);
-        /** Возвращает структуру досье. Персонажа или Игрока 
+
+        /** Возвращает набор профилей. Персонажа или Игрока 
          * @param {string} type тип - character/player
-         * @returns массив, в котором один элемент - ProfileStructure
+         * @returns массив, в котором каждый элемент - ProfileStructure из БД
         */
         LocalDBMS.prototype.getProfileStructure = function ({ type } = {}) {
             return new Promise((resolve, reject) => {
@@ -48,10 +49,10 @@ See the License for the specific language governing permissions and
                 });
             });
         };
-        /** Возвращает структуру справочника.
-         * @returns массив, в котором один элемент - DictionaryStructure
+        /** Возвращает набор всех справочников
+         * @returns массив, в котором каждый элемент - DictionaryStructure из БД
         */
-        LocalDBMS.prototype.getDictionaryStructure = function ({} = {}) {
+        LocalDBMS.prototype.getGuides = function ({} = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck('dictionary'), reject, () => {
                     resolve(R.clone(R.path(getPath('dictionary'), this.database)));
