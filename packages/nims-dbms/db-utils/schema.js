@@ -70,14 +70,14 @@ exports.getSchema = function (base) {
         Version: {
             type: 'string'
         },
-        Log,
         Groups,
         InvestigationBoard,
         Settings: {},
         Gears,
         Sliders,
         Relations,
-        ManagementInfo
+        ManagementInfo,
+        Log,
     };
     /**Какая структура у БД. Какие поля точно будут*/
     schema.required = ['Meta', 'Version', 'CharacterProfileStructure', 'Characters', 'Relations', 'PlayerProfileStructure', 'Players',

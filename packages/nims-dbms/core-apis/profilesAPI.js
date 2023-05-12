@@ -116,7 +116,9 @@ See the License for the specific language governing permissions and
                     const container = R.path(getPath('dictionary'), this.database);
                     PC.precondition(PC.createEntityCheck2(name, R.keys(container), 'entity-living-name', `entity-of-dictionary`), reject, () => {
                         const newGuide = {
-                            name: name
+                            name: name,
+                            scheme: [],
+                            guide:[],
                         };
                         R.path(getPath('dictionary'), this.database)[name] = newGuide;
                         this.ee.emit('createGuide', arguments);

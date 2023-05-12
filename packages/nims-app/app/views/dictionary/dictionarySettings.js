@@ -52,12 +52,9 @@ exports.refresh = () => {
 };
 
 
-var fillItemTypesSel = sel => U.fillSelector(sel, UI.constArr2Select(R.keys(Constants.profileFieldTypes)));
-/**Создаём описание словаря */
-function makeDictionary(guide) {
-    if(guide.scheme == undefined)
-        guide.scheme = [];
 
+/**Создаём описание словаря. Один словарь - одно описание! */
+function makeDictionary(guide) {
     const rootDiv = U.makeEl('div');
     //Диалог переименовния словаря
     const renameGuideDialog = UI.createModalDialog(
@@ -78,6 +75,12 @@ function makeDictionary(guide) {
             dialogTitle: 'dictionary-item_field_create',
             actionButtonTitle: 'common-create',
             initBody: (body) => {
+                //Заполняем позиции полей
+                
+                //U.arr2Select(["Первый","Второй"])
+
+                //Заполняем типы полей
+                const fillItemTypesSel = sel => U.fillSelector(sel, UI.constArr2Select(R.keys(Constants.profileFieldTypes)));
                 const sel = U.clearEl(U.qee(body, '.create-entity-type-select'));
                 const fillMainSel = () => { fillItemTypesSel(U.clearEl(sel)); };
                 fillMainSel();
@@ -90,7 +93,7 @@ function makeDictionary(guide) {
     //Рабочая панель
     let panel = U.qmte(`${root}.tablePanel-tmpl`);
 
-    //Создаём слушателей на кнопки
+    //Создаём слушателей на кнопки для словаря в целом
     U.listen(U.qee(panel, '.create'), 'click', () => createProfileItemDialog.showDlg());
     U.listen(U.qee(panel, '.rename'), 'click', () => renameGuideDialog.showDlg());
     U.listen(U.qee(panel, '.remove'), 'click', () => {
