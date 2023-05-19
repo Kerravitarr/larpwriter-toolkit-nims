@@ -198,7 +198,13 @@ function passEls(src, dst) {
         U.addEl(dst, src.children[i]);
     }
 }
-
+/**
+ * Создаёт слушателя события для элемента
+ * @param {Node} el элемент, который слушаем
+ * @param {string} event название события, которое слушаем
+ * @param {function} listener функция, которая сработает от события.
+ *          В функцию будет передан объект - event. 
+ */
 const listen = R.curry((el, event, listener) => {
     el.addEventListener(event, listener);
     return el;

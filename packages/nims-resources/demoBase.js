@@ -3587,8 +3587,51 @@ exports.data = {
     "Guides":{
       "Монстры": {
         "name": "Монстры",
-        "scheme": [],
-        "guide":[]
+        "scheme": [
+          {
+            "name": "Имя",
+            "type": "string",
+            "value": "",
+            "doExport": true
+          },
+          {
+            "name": "Сила",
+            "type": "number",
+            "value": 0,
+            "doExport": true
+          },
+          {
+            "name": "Описание",
+            "type": "text",
+            "value": "",
+            "doExport": true
+          }
+        ],
+        "guide": []
+      },
+      "Локации": {
+        "name": "Локации",
+        "scheme": [
+          {
+            "name": "Название",
+            "type": "string",
+            "value": "",
+            "doExport": true
+          },
+          {
+            "name": "Город",
+            "type": "enum",
+            "value": "Альквалондэ,Аваллонэ,Вилимар,Ильмарин,Гондор,Рохан,Дуртанг,Изенгард",
+            "doExport": true
+          },
+          {
+            "name": "Описание",
+            "type": "text",
+            "value": "",
+            "doExport": true
+          }
+        ],
+        "guide": []
       }
     },
     "ProfileBindings": {

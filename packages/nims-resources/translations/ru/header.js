@@ -45,8 +45,9 @@ module.exports = {
     gears: 'Шестерёнка',
     sliders: 'Микшерный пульт',
 
-    dictionary: 'Справочник',
+    dictionary: 'Справочники',
     'dictionary-settings': 'Настройки',
+    guide_view: 'Справочники',
 
     showDiff: 'Показать историю правок',
     checkConsistency: 'Проверить целостность базы',

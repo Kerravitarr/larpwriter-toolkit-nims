@@ -139,14 +139,21 @@ exports.apiInfo = {
         createProfileItem: {},
         createDictionaryItem: {},
         moveProfileItem: {},
+        moveGuideItem:{},
         removeProfileItem: {},
+        removeGuideItem: {},
         changeProfileItemType: {},
+        changeDictonaryItemType: {},
         changeProfileItemPlayerAccess: {},
         renameProfileItem: {},
+        renameGuideItem: {},
         doExportProfileItemChange: {},
+        doExportGuideItemChange:{},
         showInRoleGridProfileItemChange: {},
         updateDefaultValue: {},
-        renameEnumValue: {}
+        updateGuideDefaultValue: {},
+        renameEnumValue: {},
+        renameGuideEnumValue:{}
     },
     entityAPI: {
         getEntityNamesArray: null

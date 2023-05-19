@@ -233,10 +233,71 @@ function getProfileSettingsSchema() {
  * @returns 
  */
 function getDictionaryStructureSchema() {
-    let struct = getProfileSettingsSchema();
-    struct.title = 'DictionaryStructure';
-    struct.description = 'Описывает настройки справочника';
-    return struct;
+    return {
+        title: 'DictionaryStructure',
+        description: 'Описывает настройки справочника',
+        type: 'array',
+        items: {
+            oneOf: [{
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string'
+                    },
+                    type: {
+                        type: 'string',
+                        enum: ['string', 'text', 'enum', 'multiEnum']
+                    },
+                    value: {
+                        type: ['string']
+                    },
+                    doExport: {
+                        type: 'boolean'
+                    },
+                },
+                required: ['name', 'type', 'value', 'doExport'],
+                additionalProperties: false
+            }, {
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string'
+                    },
+                    type: {
+                        type: 'string',
+                        enum: ['number']
+                    },
+                    value: {
+                        type: ['number']
+                    },
+                    doExport: {
+                        type: 'boolean'
+                    },
+                },
+                required: ['name', 'type', 'value', 'doExport'],
+                additionalProperties: false
+            }, {
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string'
+                    },
+                    type: {
+                        type: 'string',
+                        enum: ['checkbox']
+                    },
+                    value: {
+                        type: ['boolean']
+                    },
+                    doExport: {
+                        type: 'boolean'
+                    },
+                },
+                required: ['name', 'type', 'value', 'doExport'],
+                additionalProperties: false
+            }]
+        }
+    };
 }
 /**Возвращает структуру справочников на основании переданного параметра */
 function getGuidesSchema(Guides) {
