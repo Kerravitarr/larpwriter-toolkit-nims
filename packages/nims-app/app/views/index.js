@@ -17,6 +17,7 @@ exports.About = require('./logs/about');
 const BriefingPreview = require('./briefings/briefingPreview');
 const BriefingExport = require('./briefings/briefingExport');
 const dictionarySettings = require('./dictionary/dictionarySettings');
+const guideView = require('./dictionary/guide_view');
 const LogViewer = require('./logs/logViewer');
 const GroupSchema = require('./groups/groupSchema');
 const { CharacterEditor, PlayerEditor } = require('./profiles2/profileEditor2');
@@ -40,8 +41,12 @@ exports.Briefings = require('./tabRouting/routingTab')({
 });
 
 exports.Dictionary = require('./tabRouting/routingTab')({
-    firstTab: 'dictionarySettings',
+    firstTab: 'guide_view',
     tabs: [{
+        btnName: 'guide_view',
+        viewName: 'guide_view',
+        viewBody: guideView
+    }, {
         btnName: 'dictionary-settings',
         viewName: 'dictionarySettings',
         viewBody: dictionarySettings
