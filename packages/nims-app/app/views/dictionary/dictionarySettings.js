@@ -288,6 +288,11 @@ function createGuide(dialog) {
         }).catch((err) => UI.setError(dialog, err));
     };
 }
+/**Генератор функции, которая будет выбрана при нажатии кнопки переименовании словаря
+ * 
+ * @param {*} dialog 
+ * @returns 
+ */
 function renameGuide(dialog) {
     return () => {
         const toInput = U.qee(dialog, '.entity-input');

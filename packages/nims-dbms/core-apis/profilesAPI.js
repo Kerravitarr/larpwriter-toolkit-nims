@@ -43,6 +43,33 @@ See the License for the specific language governing permissions and
             else if (type === 'dictionary') return ['DictionaryStructure'];
             else return null;
         }
+        /**
+         * Возвращает указатель на базу данных справочника
+         * @param {JSON} database база данных
+         * @param {string} nameDictionary название словаря
+         * @returns словарь или undefended... Возможно
+         */
+        function getGudeContainer(database, nameDictionary){
+            let container = R.path(getPath('dictionary'), database);
+            //Если справочники существуют, выбираем нужный нам
+            if (container != undefined)
+                container = container[nameDictionary];
+            return container;
+        }
+        /**
+         * Возвращает указатель на массив полей справочника
+         * @param {JSON} database база данных
+         * @param {string} nameDictionary название словаря
+         * @returns схема словаря или undefended... Возможно
+         */
+        function getGudeShemeContainer(database, nameDictionary){
+            let container = getGudeContainer(database, nameDictionary);
+            //Если такой справочник есть - то мы берём схему
+            if (container != undefined)
+                container = container.scheme;
+            return container;
+        }
+        
 
         const typeCheck = type => PC.chainCheck([PC.isString(type), PC.elementFromEnum(type, Constants.profileTypes)]);
 
@@ -55,6 +82,12 @@ See the License for the specific language governing permissions and
         };
 
         // profile, preview
+        /**Возвращает один конкретный профиль по запросу
+         * 
+         * @param {Enum<character,player>} type тип профиля - перс или Игрок
+         * @param {string} name имя этого негодника
+         * @returns Одно значение, представляющее собой описание запрошенного объекта
+         */
         LocalDBMS.prototype.getProfile = function ({ type, name } = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck(type), reject, () => {
@@ -105,6 +138,35 @@ See the License for the specific language governing permissions and
                 });
             });
         };
+        /**
+         * Создаёт новую запись справочника
+         * @param {string} guideName имя справочника
+         * @param {number} index позиция записи в справочнике
+         */
+        LocalDBMS.prototype.createGuideRow = function ({ guideName, index } = {}) {
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    const container = getGudeShemeContainer(this.database, guideName);
+                    let guide = getGudeContainer(this.database, guideName);
+                    const newRow = {};
+
+                    container.forEach((struct) => {
+                        if (struct.type === 'enum') {
+                            newRow[struct.name] = struct.value.split(',')[0];
+                        } else if (struct.type === 'multiEnum') {
+                            newRow[struct.name] = '';
+                        } else {
+                            newRow[struct.name] = struct.value;
+                        }
+                    });
+                    guide.rows.splice(index, 0, newRow);
+                    this.ee.emit('createGuideRow', arguments);
+                    resolve();
+                });
+            });
+        };
+
+        
 
         /**
          * Создаёт новый справочник

@@ -1,16 +1,64 @@
-<div class="guide-view-tab block">
-  <!--Создание новых справочников-->
-  <div class="panel panel-default">
-    <div class="panel-body first-panel">
-      <div class="alert alert-info no-dictionary-items " l10n-id="dictionary-alert_no_items"></div>
+<div class="guide-view-tab fixed-tab">
+  <div class="container-fluid height-100p">
+    <div class="row height-100p">
+      <!--Боковая панелька с перечислением всех справочников-->
+      <div class="col-xs-3 height-100p">
+        <div class="panel panel-default  entity-select height-100p">
+          <div class="panel-body height-100p">
+            <div class="flex-row entity-toolbar">
+              <input class="form-control entity-filter flex-1-1-auto" l10n-placeholder-id="dictionary-find_guide"
+                type="search">
+            </div>
+            <div class="alert-no-guides alert alert-info no-guides margin-bottom-8"
+              l10n-id="dictionary-alert_no_items_in_guides"></div>
+            <div class="entity-list">
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--Панелька с отображением записей выбранного справочника-->
+      <div class="col-xs-9 content-column height-100p">
+        <div class="guide-panel panel-default">
+          <div class="panel-body first-panel">
+            <div class="flex-row entity-toolbar">
+              <button class="btn btn-default btn-reduced fa-icon create flex-0-0-auto icon-padding"
+                l10n-title="dictionary-create_guide_item_title">
+                <span l10n-id="dictionary-create_guide_button_text"></span>
+              </button>
+            </div>
+            <div class="alert-no-items alert alert-info" l10n-id="dictionary-alert_guide_not_items"></div>
+          </div>
+        </div>
+        <table class="table table-bordered">
+          <tbody id="guideRow"></tbody>
+        </table>
+      </div>
     </div>
   </div>
-  <div id="dictionarys" ></div>
 
-   <!--Шаблон словаря -->
-   <template class="guide-tmpl">
-    <div>
+  <template class="entity-item-tmpl">
+    <div class="btn-group flex-row">
+      <button class="btn btn-default btn-reduced fa-icon remove flex-0-0-auto transparent"></button>
+      <button class="btn btn-default btn-reduced fa-icon rename flex-0-0-auto transparent"></button>
+      <button type="button"
+        class="select-button btn btn-default btn-reduced flex-1-1-auto text-align-left white-space-normal">
+        <span class="primary-name"></span>
+      </button>
     </div>
   </template>
 
+  <template class="guide-row-tmpl">
+    <td class="panel-body height-100p">
+      <div class="flex-row">
+        <div class="margin-right-8 flex-1-1-auto"></div>
+        <div class="flex-0-0-auto">
+          <button class="btn btn-default btn-reduced fa-icon create event flex-0-0-auto"
+            l10n-title="dictionary-create_rows"></button>
+          <button class="btn btn-default btn-reduced fa-icon remove event flex-0-0-auto"
+            l10n-title="dictionary-remove_rows"></button>
+        </div>
+      </div>
+      <div class="guide-div">
+    </td>
+  </template>
 </div>

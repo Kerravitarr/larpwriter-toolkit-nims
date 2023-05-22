@@ -319,18 +319,15 @@ function getGuidesSchema(Guides) {
             properties: {
                 name: { type: 'string' },
                 scheme: getDictionaryStructureSchema(),
-                guide: {
+                rows: {
                     type: 'array',
                     items: getDictionaryRowSchema(guide.scheme)
                 }
             },
-            required: ['name', 'scheme', 'guide'],
+            required: ['name', 'scheme', 'rows'],
             additionalProperties: false
         };
         schemaGuide.moduleList = R.keys(schemaGuide.properties);
-        /*schemaGuide.moduleDeps = [
-            ['guide', 'scheme']
-        ];*/
         schema.properties[nameGuide] = schemaGuide;
         schema.required.push(nameGuide);
     });

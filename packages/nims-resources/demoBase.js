@@ -3607,7 +3607,7 @@ exports.data = {
             "doExport": true
           }
         ],
-        "guide": []
+        "rows": []
       },
       "Локации": {
         "name": "Локации",
@@ -3631,7 +3631,7 @@ exports.data = {
             "doExport": true
           }
         ],
-        "guide": []
+        "rows": []
       }
     },
     "ProfileBindings": {

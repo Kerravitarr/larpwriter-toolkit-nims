@@ -85,6 +85,7 @@ exports.apiInfo = {
         getProfile: null,
         getAllProfiles: null,
         createProfile: {},
+        createGuideRow:{},
         createGuide: {},
         renameProfile: {},
         renameGuide: {},
