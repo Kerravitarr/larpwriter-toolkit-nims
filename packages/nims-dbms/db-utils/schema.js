@@ -784,21 +784,25 @@ function getDictionaryRowSchema(profileSettings) {
         let value;
         switch (item.type) {
             case 'text':
+                value = {
+                    type: 'object',
+                    properties: {
+                        text: {type: 'string'},
+                        height: {type: 'number'},
+                    },
+                    required: ['text','height'],
+                    additionalProperties: false
+                };
+                break;
             case 'string':
             case 'multiEnum': // it is hard to check multiEnum with schema. There is second check in consistency checker.
-                value = {
-                    type: 'string'
-                };
+                value = {type: 'string'};
                 break;
             case 'checkbox':
-                value = {
-                    type: 'boolean'
-                };
+                value = { type: 'boolean' };
                 break;
             case 'number':
-                value = {
-                    type: 'number'
-                };
+                value = {type: 'number' };
                 break;
             case 'enum':
                 value = {
@@ -817,12 +821,9 @@ function getDictionaryRowSchema(profileSettings) {
     //И вот итоговая схема - объект с полями
     const schema = {
         type: 'object',
-        additionalProperties: {
-            type: 'object',
-            properties: characterProperties,
-            required: Object.keys(characterProperties),
-            additionalProperties: false
-        }
+        properties: characterProperties,
+        required: Object.keys(characterProperties),
+        additionalProperties: false
     };
     return schema;
 }

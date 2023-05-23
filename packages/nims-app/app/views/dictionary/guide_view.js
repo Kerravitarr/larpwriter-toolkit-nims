@@ -11,7 +11,7 @@ exports.init = () => {
     exports.content = U.queryEl(root);
 
     //Слушаем событие добавления записей
-    U.listen(U.queryEl(`${root} .create`), 'click', () => newGuideRow());
+    U.listen(U.queryEl(`${root} .create`), 'click', () => newGuideRow(selectDictonagy.rows.length));
 };
 
 
@@ -37,7 +37,7 @@ exports.refresh = () => {
             U.setAttr(el, 'primary-name', nameGuide);
             //Свойство по которому будем выделять словари
             U.setAttr(el, 'guide-name', nameGuide);
-            U.listen(U.qee(el, '.select-button'), 'click', () => selectGuide(guide));
+            U.listen(U.qee(el, '.select-button'), 'click', () => {selectDictonagy = guide; exports.refresh();});
             U.setAttr(U.qee(el, '.rename'), 'title', L10n.getValue('dictionary-item_field_rename'));
             const removeBtn = U.qee(el, '.remove');
             U.setAttr(removeBtn, 'title', L10n.getValue('dictionary-item_field_remove'));
@@ -78,7 +78,6 @@ exports.refresh = () => {
  * @param {*} guide словарь, который надо отобразить 
  */
 function selectGuide(guide) {
-    console.log(guide);
     selectDictonagy = guide;
     //Скрываем панель, если справочника не будет
     U.hideEl(U.queryEl(`${root} .guide-panel`), guide === null);
@@ -103,24 +102,26 @@ function selectGuide(guide) {
 
     U.showEl(table, guide.rows.length !== 0);
 
-    R.ap([U.addEl(table)], guide.rows.map(row => appendRowToTable(guide.scheme, row)));
+    R.ap([U.addEl(table)], guide.rows.map(row => appendRowToTable(guide, guide.scheme, row)));
 }
 /**Создаёт новую строку в справочнике
  * 
  * @param {*} guide справочник, строка которого создаётся
  */
-function newGuideRow() {
-    DBMS.createGuideRow({ guideName: selectDictonagy.name, index: selectDictonagy.rows.length }).then(() => {
+function newGuideRow(index) {
+    DBMS.createGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => {
         exports.refresh();
     }).catch((err) => UI.setError(dialog, err));
 }
 /**Сооружает строку таблицы и возвращает её
  * 
+ * @param {*} guide гайд, чья строка
  * @param {*} scheme схема по которой раскрывается строка
  * @param {*} row строка, которую мы хотим отобразить
  * @returns 
  */
-function appendRowToTable(scheme, row) {
+function appendRowToTable(guide, scheme, row) {
+    const index = guide.rows.indexOf(row);
     //Создаём нашу строку
     const el = U.wrapEl('tr', U.qte(`${root} .guide-row-tmpl`));
     //И русифицируем её
@@ -128,10 +129,25 @@ function appendRowToTable(scheme, row) {
     const panel = U.qee(el, '.guide-div');
     //А теперь для каждого элемента строки
     scheme.forEach(obj => {
-        let input, sel, toNameObj,multiEnumSelect;
+        let input, sel, toNameObj, multiEnumSelect;
         switch (obj.type) {
             case 'text':
                 input = U.makeEl('textarea');
+                /*const resize = onGChangeFieldValue(guide.name,index, undefined, obj.type, input, obj.name);
+                let timerId = undefined;
+                function outputsize() {
+                    if(input.style.height == input.offsetHeight) return;
+                    if(timerId != undefined){
+                        clearTimeout(timerId);
+                    }
+                    timerId = setTimeout(() => {
+                        resize(undefined);
+                        timerId = undefined;
+                    }, 250);
+                }
+                if(row[obj.name].height > 0)
+                    input.style.height = row[obj.name].height + "px";
+                new ResizeObserver(outputsize).observe(input);*/
                 U.addClass(input, 'profileTextInput');
                 break;
             case 'string':
@@ -161,24 +177,32 @@ function appendRowToTable(scheme, row) {
                 U.setAttr(multiEnumSelect[0], 'multiple', 'multiple');
 
                 sel = multiEnumSelect.select2(U.arr2Select2(R.sort(CU.charOrdA, obj.value.split(','))));
-                //sel.on('change', this.updateFieldValue.bind(this));
+                sel.on('change', onGChangeFieldValue(guide.name, index, multiEnumSelect, obj.type, input, obj.name));
                 break;
             default:
                 throw new Errors.InternalError('errors-unexpected-switch-argument', [obj.type]);
         }
 
         if (obj.type !== 'multiEnum') {
-            //U.listen(input, 'change', this.updateFieldValue.bind(this));
+            U.listen(input, 'change', onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name));
             U.addClass(input, 'form-control');
         }
-        if(obj.type === 'text'){
+        if (obj.type === 'checkbox') {
+            input.checked = row[obj.name];
+        } else if (obj.type === 'multiEnum') {
+            multiEnumSelect.val(row[obj.name] === '' ? null : row[obj.name].split(',')).trigger('change');
+        } else if (obj.type === 'text') {
+            input.value = row[obj.name].text;
+        } else {
+            input.value = row[obj.name];
+        }
+        if (obj.type === 'text') {
             let label = U.makeEl('label');
             U.addClass(label, 'col-xs-11 control-label');
             U.addEl(label, U.makeText(obj.name + ': '));
             U.addEl(panel, label);
             U.addEl(panel, input);
         } else {
-            input.value = row[obj.name];
             let grupe = U.makeEl('div');
             U.addClass(grupe, 'form-group');
             let label = U.makeEl('label');
@@ -193,39 +217,68 @@ function appendRowToTable(scheme, row) {
         }
     });
 
-    //const qe = U.qee(el,'');
-    /*  const nameInput = qe('.event-name-input');
-      nameInput.value = event.name;
-      nameInput.eventIndex = index;
-      U.listen(nameInput, 'change', updateEventName);
-  
-      const textInput = qe('.event-text');
-      textInput.value = event.text;
-      textInput.eventIndex = index;
-      U.listen(textInput, 'change', updateEventText);
-  
-      UI.makeEventTimePicker2(qe('.event-time'), {
-          eventTime: event.time,
-          index,
-          preGameDate,
-          date,
-          onChangeDateTimeCreator
-      });
-  
-      U.listen(U.qee(el, '.move'), 'click', () => {
-          state.moveEventDialog.index = index;
-          state.moveEventDialog.showDlg();
-      });
-  
-      U.listen(U.qee(el, '.clone'), 'click', cloneEvent(index));
-      if (state.eventsLength === index + 1) {
-          U.setAttr(U.qee(el, '.merge'), 'disabled', 'disabled');
-      } else {
-          U.listen(U.qee(el, '.merge'), 'click', mergeEvents(index, event.name, events[index + 1].name));
-      }
-      U.listen(U.qee(el, '.remove'), 'click', removeEvent(event.name, index));
-  */
+    //А теперь события!
+    U.listen(U.qee(el, '.create'), 'click', () => newGuideRow(index));
+    U.listen(U.qee(el, '.remove'), 'click', () => {
+        UI.confirm(L10n.getValue('dictionary-dialog_remove_item'), () => {
+            DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => {
+                exports.refresh();
+            }).catch((err) => UI.setError(dialog, err));
+        });
+    });
     return el;
+}
+/**Генератор функции, которая сработает при изменении данных в поле записи
+ * 
+ * @param {string} guideName имя гайда
+ * @param {ineger} index номер строки
+ * @param {Node} multiEnumSelect объект многовариантного выбора 
+ * @param {string} type тип поля
+ * @param {Node} input объект ввода, поле у пользователя
+ * @param {string} fieldName название поля
+ */
+function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fieldName) {
+    return (event) => {
+        if (multiEnumSelect && multiEnumSelect.prop('disabled')) {
+            return; // we need to trigger change event on multiEnumSelect to update selection.
+            // It may be disabled so it has false positive call.
+        }
+
+        let value;
+        switch (type) {
+            case 'text':
+                value = {text: input.value, height: input.offsetHeight};
+            break;
+            case 'string':
+            case 'enum':
+                value = input.value;
+                break;
+            case 'number':
+                if (Number.isNaN(input.value)) {
+                    UI.alert(L10n.getValue('profiles-not-a-number'));
+                    input.value = 0;
+                    return;
+                }
+                value = Number(input.value);
+                break;
+            case 'checkbox':
+                value = input.checked;
+                break;
+            case 'multiEnum':
+                value = multiEnumSelect.val().join(',');
+                break;
+            default:
+                UI.handleError(new Errors.InternalError('errors-unexpected-switch-argument', [type]));
+                return;
+        }
+        DBMS.updateGuideRowField({
+            guideName: guideName,
+            index: index,
+            fieldName: fieldName,
+            itemType: type,
+            value
+        }).catch(UI.processError());
+    }
 }
 
 /**Генератор функции, которая будет выбрана при нажатии кнопки переименовании словаря

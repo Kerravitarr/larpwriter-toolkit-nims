@@ -17,6 +17,7 @@ module.exports = {
     'argument-is-not-an-array': 'Аргумент "{0}" не является массивом',
     'argument-is-not-an-object': 'Аргумент "{0}" не является объектом',
     'argument-is-not-a-boolean': 'Аргумент "{0}" не является булевой переменной',
+    'argument-is-not-a-object': 'Аргумент "{0}" не является объектом, ошибка программиста',
     'argument-is-not-nil': 'Аргумент "{0}" не пуст',
     'entity-is-used': 'Сущность "{0}" уже существует',
 

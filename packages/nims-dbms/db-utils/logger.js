@@ -86,11 +86,13 @@ exports.apiInfo = {
         getAllProfiles: null,
         createProfile: {},
         createGuideRow:{},
+        removeGuideRow:{},
         createGuide: {},
         renameProfile: {},
         renameGuide: {},
         removeProfile: {},
         removeGuide: {},
+        updateGuideRowField:{},
         updateProfileField: {} // text
     },
     profileBindingAPI: {

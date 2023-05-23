@@ -49,7 +49,7 @@ See the License for the specific language governing permissions and
          * @param {string} nameDictionary название словаря
          * @returns словарь или undefended... Возможно
          */
-        function getGudeContainer(database, nameDictionary){
+        function getGudeContainer(database, nameDictionary) {
             let container = R.path(getPath('dictionary'), database);
             //Если справочники существуют, выбираем нужный нам
             if (container != undefined)
@@ -62,14 +62,14 @@ See the License for the specific language governing permissions and
          * @param {string} nameDictionary название словаря
          * @returns схема словаря или undefended... Возможно
          */
-        function getGudeShemeContainer(database, nameDictionary){
+        function getGudeShemeContainer(database, nameDictionary) {
             let container = getGudeContainer(database, nameDictionary);
             //Если такой справочник есть - то мы берём схему
             if (container != undefined)
                 container = container.scheme;
             return container;
         }
-        
+
 
         const typeCheck = type => PC.chainCheck([PC.isString(type), PC.elementFromEnum(type, Constants.profileTypes)]);
 
@@ -147,7 +147,7 @@ See the License for the specific language governing permissions and
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck('dictionary'), reject, () => {
                     const container = getGudeShemeContainer(this.database, guideName);
-                    let guide = getGudeContainer(this.database, guideName);
+                    const guide = getGudeContainer(this.database, guideName);
                     const newRow = {};
 
                     container.forEach((struct) => {
@@ -155,6 +155,8 @@ See the License for the specific language governing permissions and
                             newRow[struct.name] = struct.value.split(',')[0];
                         } else if (struct.type === 'multiEnum') {
                             newRow[struct.name] = '';
+                        } else if (struct.type === 'text') {
+                            newRow[struct.name] = { text: struct.value, height: -1 };
                         } else {
                             newRow[struct.name] = struct.value;
                         }
@@ -165,8 +167,23 @@ See the License for the specific language governing permissions and
                 });
             });
         };
+        /**Удаляет запись справочника
+         * @param {string} guideName имя справочника
+         * @param {number} index позиция записи в справочнике
+         */
+        LocalDBMS.prototype.removeGuideRow = function ({ guideName, index } = {}) {
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    let guide = getGudeContainer(this.database, guideName);
+                    guide.rows.splice(index, 1);
+                    console.log(guide.rows);
+                    this.ee.emit('removeGuideRow', arguments);
+                    resolve();
+                });
+            });
+        };
 
-        
+
 
         /**
          * Создаёт новый справочник
@@ -180,7 +197,7 @@ See the License for the specific language governing permissions and
                         const newGuide = {
                             name: name,
                             scheme: [],
-                            guide:[],
+                            guide: [],
                         };
                         R.path(getPath('dictionary'), this.database)[name] = newGuide;
                         this.ee.emit('createGuide', arguments);
@@ -217,7 +234,7 @@ See the License for the specific language governing permissions and
          * @param {string} fromName имя, под которым объект сейчас находится в БД
          * @param {string} toName имя, которое теперь объект будет гордо носить
          */
-        LocalDBMS.prototype.renameGuide = function ({fromName, toName } = {}) {
+        LocalDBMS.prototype.renameGuide = function ({ fromName, toName } = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck('dictionary'), reject, () => {
                     const container = R.path(getPath('dictionary'), this.database);
@@ -252,8 +269,7 @@ See the License for the specific language governing permissions and
             });
         };
 
-        /**
-         * Удаляет справочник
+        /**Удаляет справочник
          * @param {string} name его имя
          * @returns 
          */
@@ -270,59 +286,54 @@ See the License for the specific language governing permissions and
             });
         };
 
-
-        
-
         const typeSpecificPreconditions = (itemType, itemDesc, value) => {
             switch (itemType) {
-            case 'text':
-            case 'string':
-            case 'checkbox':
-            case 'number':
-                return PC.nil();
-            case 'enum':
-                return PC.elementFromEnum(value, itemDesc.value.split(','));
-            case 'multiEnum':
-                return PC.eitherCheck(
-                    PC.elementsFromEnum(value.split(','), itemDesc.value.split(',')),
-                    PC.isEmptyString(value)
-                );
-            default:
-                throw new Error(`Unexpected itemType ${itemType}`);
+                case 'text':
+                case 'string':
+                case 'checkbox':
+                case 'number':
+                    return PC.nil();
+                case 'enum':
+                    return PC.elementFromEnum(value, itemDesc.value.split(','));
+                case 'multiEnum':
+                    return PC.eitherCheck(
+                        PC.elementsFromEnum(value.split(','), itemDesc.value.split(',')),
+                        PC.isEmptyString(value)
+                    );
+                default:
+                    throw new Error(`Unexpected itemType ${itemType}`);
             }
         };
 
         // profile editor
-        LocalDBMS.prototype.updateProfileField = function ({
-            type, characterName, fieldName, itemType, value
-        } = {}) {
+        LocalDBMS.prototype.updateProfileField = function ({ type, characterName, fieldName, itemType, value } = {}) {
             return new Promise((resolve, reject) => {
                 PC.precondition(typeCheck(type), reject, () => {
                     const container = R.path(getPath(type), this.database);
                     const containerStructure = R.path(getStructurePath(type), this.database);
                     const arr = [PC.entityExistsCheck(characterName, R.keys(container)),
-                        PC.entityExistsCheck(
-                            `${fieldName}/${itemType}`,
-                            containerStructure.map(item => `${item.name}/${item.type}`)
-                        ),
-                        PC.getValueCheck(itemType)(value)];
+                    PC.entityExistsCheck(
+                        `${fieldName}/${itemType}`,
+                        containerStructure.map(item => `${item.name}/${item.type}`)
+                    ),
+                    PC.getValueCheck(itemType)(value)];
                     PC.precondition(PC.chainCheck(arr), reject, () => {
                         const itemDesc = R.find(R.propEq('name', fieldName), containerStructure);
                         PC.precondition(typeSpecificPreconditions(itemType, itemDesc, value), reject, () => {
                             const profileInfo = container[characterName];
                             switch (itemType) {
-                            case 'text':
-                            case 'string':
-                            case 'enum':
-                            case 'multiEnum':
-                            case 'checkbox':
-                                profileInfo[fieldName] = value;
-                                break;
-                            case 'number':
-                                profileInfo[fieldName] = Number(value);
-                                break;
-                            default:
-                                reject(new Errors.InternalError('errors-unexpected-switch-argument', [itemType]));
+                                case 'text':
+                                case 'string':
+                                case 'enum':
+                                case 'multiEnum':
+                                case 'checkbox':
+                                    profileInfo[fieldName] = value;
+                                    break;
+                                case 'number':
+                                    profileInfo[fieldName] = Number(value);
+                                    break;
+                                default:
+                                    reject(new Errors.InternalError('errors-unexpected-switch-argument', [itemType]));
                             }
                             resolve();
                         });
@@ -330,6 +341,63 @@ See the License for the specific language governing permissions and
                 });
             });
         };
+        /**Обновляет значение в строке записи справочника
+         * 
+         * @param {string} guideName имя справочника
+         * @param {number} index позиция записи в справочнике
+         * @returns 
+         */
+        LocalDBMS.prototype.updateGuideRowField = function ({ guideName, index, itemType, value, fieldName } = {}) {
+            //Проверяем тип входного значения
+            function getValueCheck(type,value) {
+                switch (type) {
+                    case 'checkbox':
+                        return PC.isBoolean(value);
+                    case 'number':
+                        return PC.isNumber(value);
+                    case 'text':
+                        return () => (R.is(Number, value.height) ? (R.is(String, value.text) ? null : ['errors-argument-is-not-a-string', [value.text]]) : ['errors-argument-is-not-a-number', [value.height]]);
+                    default:
+                        return PC.isString(value);
+                }
+            }
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    const guide = getGudeContainer(this.database, guideName);
+                    const containerStructure = getGudeShemeContainer(this.database, guideName);
+                    const arr = [() => index < guide.rows.lenght,
+                    PC.entityExistsCheck(
+                        `${fieldName}/${itemType}`,
+                        containerStructure.map(item => `${item.name}/${item.type}`)
+                    ),
+                    getValueCheck(itemType,value)];
+                    PC.precondition(PC.chainCheck(arr), reject, () => {
+                        const itemDesc = R.find(R.propEq('name', fieldName), containerStructure);
+                        PC.precondition(typeSpecificPreconditions(itemType, itemDesc, value), reject, () => {
+                            const row = guide.rows[index];
+                            switch (itemType) {
+                                case 'text':
+                                case 'string':
+                                case 'enum':
+                                case 'multiEnum':
+                                case 'checkbox':
+                                    row[fieldName] = value;
+                                    break;
+                                case 'number':
+                                    row[fieldName] = Number(value);
+                                    break;
+                                default:
+                                    reject(new Errors.InternalError('errors-unexpected-switch-argument', [itemType]));
+                            }
+                            resolve();
+                        });
+                    });
+                });
+            });
+        };
+
+
+
 
         function _createProfileItem([{
             type, name, itemType, value
