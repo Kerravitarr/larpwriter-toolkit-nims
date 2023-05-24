@@ -83,6 +83,7 @@ exports.apiInfo = {
     profilesAPI: {
         getProfileNamesArray: null,
         getProfile: null,
+        getGuide: null,
         getAllProfiles: null,
         createProfile: {},
         createGuideRow:{},

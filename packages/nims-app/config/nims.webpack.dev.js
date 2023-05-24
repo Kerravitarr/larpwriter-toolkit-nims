@@ -230,7 +230,7 @@ module.exports = (env, argv) => {
         // ENABLE_EXTRAS: valOrDefault(env.ENABLE_EXTRAS, true)
         ENABLE_EXTRAS: valOrDefault(env.ENABLE_EXTRAS, true)
     };
-
+    //А вот тут мы получаем из опций командной строки нужные нам значения
     config.plugins.push(new webpack.DefinePlugin({
         PRODUCT: JSON.stringify(env.product === 'server' ? 'SERVER' : 'STANDALONE'),
         MODE: JSON.stringify(env.mode === 'production' ? 'PROD' : 'DEV'),

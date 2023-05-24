@@ -14,8 +14,8 @@
     "nims-wp-watch-server": "webpack --watch --env.product=server",
     "watch:server": "webpack --watch --env product=server",
     "nims-wp-build-server": "webpack --env.product=server",
-    "nims-wp-build-stand": "webpack --env.product=standalone",
-    "nims-wp-build-stand-stats": "webpack --env.product=standalone --env.mode=production --profile --json > stats.json",
+    "nims-wp-build-stand": "webpack --env product=standalone",
+    "nims-wp-build-stand-stats": "webpack --env product=standalone --env mode=production --profile --json > stats.json",
     "nims-dev": "./node_modules/.bin/gulp dev --configFile \"config/nims-config.json\"",
     "nims-live": "node live.js --configFile \"config/nims-config.json\"",
     "nims-reload": "cd ../nims-dist && reload -b -s nims.html",
@@ -30,7 +30,9 @@
     "nims-eclint": "eclint fix app\\nims && eclint fix dbms\\nims",
     "core-eslint": "eslint app\\core\\js --fix && eslint dbms\\core --fix && eslint config --fix && eslint server --fix",
     "nims-eslint": "eslint app\\nims --fix && eslint dbms\\nims --fix",
-    "nims-lint2": "\"node_modules/.bin/eslint\" app\\nims\\js --fix && \"node_modules/.bin/eslint\" app\\nims\\specs --fix"
+    "nims-lint2": "\"node_modules/.bin/eslint\" app\\nims\\js --fix && \"node_modules/.bin/eslint\" app\\nims\\specs --fix",
+    
+    "nims-build-app": "webpack --env product=standalone --env mode=production --profile"
   },
   "author": "Timofey Rechkalov (NtsDK)",
   "license": "Apache-2.0",

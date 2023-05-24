@@ -54,8 +54,10 @@ module.exports = function (imports) {
             });
         }).catch(err => console.error(err));
     };
-
-
+    /** Загружает базы данных из памяти браузера
+     * 
+     * @returns списко баз данных из памяти браузера
+     */
     function readLocalBases() {
         if (!window.indexedDB) {
             UI.alert(L10n.get('errors', 'indexeddb-is-not-found'));
@@ -89,8 +91,9 @@ module.exports = function (imports) {
         setInterval(makeBackup, BACKUP_INTERVAL); // 5 min
     }
     exports.localAutoSave = localAutoSave;
-
+    //Счётчик, сколько БД уже в памяти
     let counter = 0;
+    //Создаёт отпечаток базы в памяти браузера
     function makeBackup() {
         console.log(counter + 1);
         counter = (counter + 1) % BACKUP_NUMBER;

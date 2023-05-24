@@ -76,9 +76,7 @@ See the License for the specific language governing permissions and
             });
         };
         // profile configurer
-        LocalDBMS.prototype.createProfileItem = function ({
-            type, name, itemType, selectedIndex
-        } = {}) {
+        LocalDBMS.prototype.createProfileItem = function ({   type, name, itemType, selectedIndex } = {}) {
             return new Promise((resolve, reject) => {
                 let chain = [typeCheck(type), PC.isString(name), PC.notEquals(name, 'name'),
                 PC.isNumber(selectedIndex), itemTypeCheck(itemType)];
@@ -97,9 +95,7 @@ See the License for the specific language governing permissions and
                         };
 
                         container.splice(selectedIndex, 0, profileItem);
-                        this.ee.emit('createProfileItem', [{
-                            type, name, itemType, value
-                        }]);
+                        this.ee.emit('createProfileItem', [{ type, name, itemType, value }]);
                         resolve();
                     });
                 });
@@ -123,12 +119,16 @@ See the License for the specific language governing permissions and
                     //Создание положения
                     chain = [PC.createEntityCheck2(nameField, container.map(R.prop('name')), 'entity-lifeless-name', 'entity-of-dictionary-item'), PC.isInRange(selectedIndex, 0, container.length)];
                     PC.precondition(PC.chainCheck(chain), reject, () => {
-                        const { value } = Constants.profileFieldTypes[itemType];
+                        let { value } = Constants.profileFieldTypes[itemType];
+                        //В справочниках немного различается эта графа. Возможно, когда вы это читаете, это уже не актуально... Однак пока
+                        if(itemType == 'text'){
+                            value = {text: '', height: -1};
+                        }
                         //Создаём объект
                         const dictionaryItem = { name: nameField, type: itemType, value, doExport: true };
                         //Укладываем его
                         container.splice(selectedIndex, 0, dictionaryItem);
-                        this.ee.emit('createDictionaryItem', [{ type: 'dictionary', nameField, itemType, value }]);
+                        this.ee.emit('updateDictionaryItem', [{ guideName:nameDictionary, nameField: nameField, value:value }]);
                         resolve();
                     });
                 });
@@ -212,7 +212,7 @@ See the License for the specific language governing permissions and
                     const els = container.map((item, i) => `${i}/${item.name}`);
                     PC.precondition(PC.entityExists(`${index}/${itemName}`, els), reject, () => {
                         CU.removeFromArrayByIndex(container, index);
-                        this.ee.emit('removeGuideItem', arguments);
+                        this.ee.emit('updateDictionaryItem', [{ guideName:guideName, nameField: itemName, value:undefined }]);
                         resolve();
                     });
                 });
@@ -251,8 +251,13 @@ See the License for the specific language governing permissions and
                     PC.precondition(PC.entityExists(itemName, container.map(R.prop('name'))), reject, () => {
                         const profileItem = container.filter(elem => elem.name === itemName)[0];
                         profileItem.type = newType;
-                        profileItem.value = Constants.profileFieldTypes[newType].value;
-                        this.ee.emit('changeDictonaryItemType', arguments);
+                        let { value } = Constants.profileFieldTypes[newType];
+                        //В справочниках немного различается эта графа. Возможно, когда вы это читаете, это уже не актуально... Однак пока
+                        if(newType == 'text'){
+                            value = {text: '', height: -1};
+                        }
+                        profileItem.value = value;
+                        this.ee.emit('updateDictionaryItem', [{ guideName:guideName, nameField: itemName, value:value }]);
                         resolve();
                     });
                 });
@@ -300,7 +305,7 @@ See the License for the specific language governing permissions and
                 PC.precondition(typeCheck('dictionary'), reject, () => {
                     const container = getGudeShemeContainer(this.database, guideName);
                     PC.precondition(PC.renameEntityCheck(oldName, newName, container.map(R.prop('name'))), reject, () => {
-                        this.ee.emit('renameGuideItem', arguments);
+                        this.ee.emit('renameGuideItem', [{guideName:guideName, newName: newName, oldName: oldName}]);
                         container.filter(elem => elem.name === oldName)[0].name = newName;
                         resolve();
                     });
@@ -400,9 +405,7 @@ See the License for the specific language governing permissions and
                                     newOptionsMap = R.zipObj(newOptions, R.repeat(true, newOptions.length));
 
                                     if (missedValues.length !== 0) {
-                                        this.ee.emit(info.type === 'enum' ? 'replaceEnumValue' : 'replaceMultiEnumValue', [{
-                                            type, profileItemName, defaultValue: newOptions[0], newOptionsMap
-                                        }]);
+                                        this.ee.emit(info.type === 'enum' ? 'replaceEnumValue' : 'replaceMultiEnumValue', [{type, profileItemName, defaultValue: newOptions[0], newOptionsMap}]);
                                     }
 
                                     info.value = newOptions.join(',');
@@ -450,9 +453,7 @@ See the License for the specific language governing permissions and
                                     newOptionsMap = R.zipObj(newOptions, R.repeat(true, newOptions.length));
 
                                     if (missedValues.length !== 0) {
-                                        this.ee.emit(info.type === 'enum' ? 'replaceGuideEnumValue' : 'replaceGuideMultiEnumValue', [{
-                                            itemName, defaultValue: newOptions[0], newOptionsMap
-                                        }]);
+                                        this.ee.emit(info.type === 'enum' ? 'replaceGuideEnumValue' : 'replaceGuideMultiEnumValue', [{guideName:guideName, nameField:itemName, defaultValue: newOptions[0], newOptionsMap}]);
                                     }
 
                                     info.value = newOptions.join(',');
@@ -508,7 +509,7 @@ See the License for the specific language governing permissions and
                             PC.precondition(PC.chainCheck(chain), reject, () => {
                                 list[R.indexOf(fromValue, list)] = toValue;
                                 info.value = list.join(',');
-                                this.ee.emit(info.type === 'enum' ? 'renameGuideEnumValue' : 'renameGuideMultiEnumValue', arguments);
+                                this.ee.emit(info.type === 'enum' ? 'renameGuideEnumValue' : 'renameGuideMultiEnumValue', [{guideName, nameField:itemName, fromValue, toValue}]);
                                 resolve();
                             });
                         });

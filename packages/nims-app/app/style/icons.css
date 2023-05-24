@@ -57,6 +57,9 @@ See the License for the specific language governing permissions and
   content: "\f2ed";
   font-weight: 500;
 }
+.resize:before {
+  content: "\f424";
+}
 .rename:before {
   content: "\f044";
 }

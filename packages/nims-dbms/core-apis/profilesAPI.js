@@ -86,7 +86,7 @@ See the License for the specific language governing permissions and
          * 
          * @param {Enum<character,player>} type тип профиля - перс или Игрок
          * @param {string} name имя этого негодника
-         * @returns Одно значение, представляющее собой описание запрошенного объекта
+         * @returns Одно значение, представляющее собой запрошенный объект. Например перс с ником *
          */
         LocalDBMS.prototype.getProfile = function ({ type, name } = {}) {
             return new Promise((resolve, reject) => {
@@ -94,6 +94,22 @@ See the License for the specific language governing permissions and
                     const container = R.path(getPath(type), this.database);
                     PC.precondition(PC.entityExistsCheck(name, R.keys(container)), reject, () => {
                         resolve(R.clone(container[name]));
+                    });
+                });
+            });
+        };
+
+        /**Возвращает один конкретный справочник
+         * 
+         * @param {string} guideName имя справочника
+         * @returns Словарь
+         */
+        LocalDBMS.prototype.getGuide = function ({ guideName } = {}) {
+            return new Promise((resolve, reject) => {
+                PC.precondition(typeCheck('dictionary'), reject, () => {
+                    const container = R.path(getPath('dictionary'), this.database);
+                    PC.precondition(PC.entityExistsCheck(guideName, R.keys(container)), reject, () => {
+                        resolve(R.clone(container[guideName]));
                     });
                 });
             });
@@ -197,7 +213,7 @@ See the License for the specific language governing permissions and
                         const newGuide = {
                             name: name,
                             scheme: [],
-                            guide: [],
+                            rows: [],
                         };
                         R.path(getPath('dictionary'), this.database)[name] = newGuide;
                         this.ee.emit('createGuide', arguments);
@@ -396,19 +412,20 @@ See the License for the specific language governing permissions and
             });
         };
 
-
-
-
-        function _createProfileItem([{
-            type, name, itemType, value
-        }] = []) {
+        /**А это дополнительная функция. Если создано новое поле у пользователя
+         * то эта функция как раз обновляет всех пользователей
+         * @param {string} type тип - character/player
+         * @param {string} name имя поля, которое обновляется 
+         * @param {enum<Constants.profileFieldTypes>} itemType тип поля
+         * @param {*} value объект, который присваивается всем из набора
+         */
+        function _createProfileItem([{ type, name, itemType, value }] = []) {
             // throw new Error(arguments);
             const profileSet = R.path(getPath(type), this.database);
             Object.keys(profileSet).forEach((characterName) => {
                 profileSet[characterName][name] = value;
             });
         }
-
         addListener('createProfileItem', _createProfileItem);
 
         function _removeProfileItem([{ type, index, profileItemName }] = []) {
@@ -417,7 +434,6 @@ See the License for the specific language governing permissions and
                 delete profileSet[characterName][profileItemName];
             });
         }
-
         addListener('removeProfileItem', _removeProfileItem);
 
         function _changeProfileItemType([{ type, profileItemName, newType }] = []) {
@@ -426,7 +442,6 @@ See the License for the specific language governing permissions and
                 profileSet[characterName][profileItemName] = Constants.profileFieldTypes[newType].value;
             });
         }
-
         addListener('changeProfileItemType', _changeProfileItemType);
 
         function _renameProfileItem([{ type, newName, oldName }] = []) {
@@ -437,12 +452,9 @@ See the License for the specific language governing permissions and
                 profileSet[characterName][newName] = tmp;
             });
         }
-
         addListener('renameProfileItem', _renameProfileItem);
 
-        function _replaceEnumValue([{
-            type, profileItemName, defaultValue, newOptionsMap
-        }] = []) {
+        function _replaceEnumValue([{type, profileItemName, defaultValue, newOptionsMap }] = []) {
             const profileSet = R.path(getPath(type), this.database);
             Object.keys(profileSet).forEach((characterName) => {
                 const enumValue = profileSet[characterName][profileItemName];
@@ -451,7 +463,6 @@ See the License for the specific language governing permissions and
                 }
             });
         }
-
         addListener('replaceEnumValue', _replaceEnumValue);
 
         function _replaceMultiEnumValue([{
@@ -466,12 +477,9 @@ See the License for the specific language governing permissions and
                 }
             });
         }
-
         addListener('replaceMultiEnumValue', _replaceMultiEnumValue);
 
-        function _renameEnumValue([{
-            type, profileItemName, fromValue, toValue
-        }] = []) {
+        function _renameEnumValue([{ type, profileItemName, fromValue, toValue }] = []) {
             const profileSet = R.path(getPath(type), this.database);
             Object.keys(profileSet).forEach((characterName) => {
                 const enumValue = profileSet[characterName][profileItemName];
@@ -482,9 +490,7 @@ See the License for the specific language governing permissions and
         }
         addListener('renameEnumValue', _renameEnumValue);
 
-        function _renameMultiEnumValue([{
-            type, profileItemName, fromValue, toValue
-        }] = []) {
+        function _renameMultiEnumValue([{ type, profileItemName, fromValue, toValue }] = []) {
             const profileSet = R.path(getPath(type), this.database);
             Object.keys(profileSet).forEach((characterName) => {
                 const value = profileSet[characterName][profileItemName];
@@ -498,6 +504,74 @@ See the License for the specific language governing permissions and
             });
         }
         addListener('renameMultiEnumValue', _renameMultiEnumValue);
+
+        /** Функция прохода по каждому элементу заданого справочника
+         * 
+         * @param {string} guideName имя справочника
+         * @param {string} nameField имя поля, которое надо обработать
+         * @param {function(*)} functionUpdate функция, которая принимает на вход текущее значение и возвращает новое
+         */
+        function _forEachRowGuide(database, guideName, nameField, functionUpdate) {
+            const guide = R.path(getPath('dictionary'), database)[guideName];
+            //И в каждой строке устанавливаем новое значение
+            guide.rows.forEach(row => {
+                row[nameField] = functionUpdate(row[nameField]);
+            });
+        }
+
+        /**А это дополнительная функция. Если создано новое поле у справочника
+         * то эта функция как раз обновляет все записи
+         * тоже самое с удалением поля и обновлением типа
+         * 
+         * @param {string} type тип - character/player
+         * @param {string} name имя поля, которое обновляется 
+         * @param {enum<Constants.profileFieldTypes>} itemType тип поля
+         * @param {*} value объект, который присваивается всем из набора
+         */
+        function _updateDictionaryItem([{ guideName, nameField, value }] = []) {
+            console.log(value);
+            _forEachRowGuide(this.database, guideName,nameField, (old) => {return value} );
+        }
+        function _renameGuideItem([{guideName, newName, oldName }] = []) {
+            const guide = R.path(getPath('dictionary'), this.database)[guideName];
+            //И в каждой строке устанавливаем новое значение
+            guide.rows.forEach(row => {
+                const tmp = row[oldName];
+                delete row[oldName];
+                row[newName] = tmp;
+            });
+        }
+        function _replaceGuideEnumValue([{ guideName, nameField, defaultValue, newOptionsMap }] = []) {
+            _forEachRowGuide(this.database, guideName,nameField, (old) => {return newOptionsMap[enumValue] ? old : defaultValue;} );
+        }
+        function _replaceGuideMultiEnumValue([{ guideName, nameField, defaultValue, newOptionsMap }] = []) {
+            _forEachRowGuide(this.database, guideName,nameField, (old) => {return old === '' ? old : R.intersection(old.split(','), R.keys(newOptionsMap)).join(',');} );
+        }
+        function _renameGuideEnumValue([{ guideName, nameField, fromValue, toValue}] = []) {
+            _forEachRowGuide(this.database, guideName,nameField, (old) => {return old !== fromValue ? old : toValue;} );
+        }
+        function _renameGuideMultiEnumValue([{ guideName, nameField, fromValue, toValue}] = []) {
+            _forEachRowGuide(this.database, guideName,nameField, (old) => {
+                if(old === ''){
+                    return old;
+                } else {
+                    const list = old.split(',');
+                    if (R.contains(fromValue, list)) {
+                        list[R.indexOf(fromValue, list)] = toValue;
+                        return list.join(',');
+                    } else {
+                        return old;
+                    }
+                }
+            } );
+        }
+
+        addListener('updateDictionaryItem', _updateDictionaryItem); 
+        addListener('renameGuideItem', _renameGuideItem);
+        addListener('replaceGuideEnumValue', _replaceGuideEnumValue);
+        addListener('replaceGuideMultiEnumValue', _replaceGuideMultiEnumValue);
+        addListener('renameGuideEnumValue', _renameGuideEnumValue);
+        addListener('renameGuideMultiEnumValue', _renameGuideMultiEnumValue);
     }
 
     callback2(profilesAPI);

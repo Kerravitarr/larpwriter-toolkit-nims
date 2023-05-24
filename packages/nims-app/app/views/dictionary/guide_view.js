@@ -9,9 +9,9 @@ let selectDictonagy = undefined;
 
 exports.init = () => {
     exports.content = U.queryEl(root);
-
     //Слушаем событие добавления записей
     U.listen(U.queryEl(`${root} .create`), 'click', () => newGuideRow(selectDictonagy.rows.length));
+    U.listen(U.queryEl(`${root} .entity-filter`), 'input', filterOptions);
 };
 
 
@@ -31,13 +31,14 @@ exports.refresh = () => {
         //Разершить поиск, если справочники есть
         UI.enableEl(U.queryEl(`${root}.entity-filter`), allGuides.length > 0);
 
-        allGuides.forEach(([nameGuide, guide]) => {
+        for (let index = 0; index < allGuides.length; index++) {
+            const [nameGuide, guide] = allGuides[index];
             const el = U.wrapEl('div', U.qte(`${root} .entity-item-tmpl`));
             U.addEl(U.qee(el, '.primary-name'), U.makeText(nameGuide));
             U.setAttr(el, 'primary-name', nameGuide);
             //Свойство по которому будем выделять словари
             U.setAttr(el, 'guide-name', nameGuide);
-            U.listen(U.qee(el, '.select-button'), 'click', () => {selectDictonagy = guide; exports.refresh();});
+            U.listen(U.qee(el, '.select-button'), 'click', () => { selectGuide(guide.name); });
             U.setAttr(U.qee(el, '.rename'), 'title', L10n.getValue('dictionary-item_field_rename'));
             const removeBtn = U.qee(el, '.remove');
             U.setAttr(removeBtn, 'title', L10n.getValue('dictionary-item_field_remove'));
@@ -57,52 +58,75 @@ exports.refresh = () => {
             U.listen(removeBtn, 'click', () => {
                 UI.confirm(CU.strFormat(L10n.getValue('dictionary-remove_text'), [guide.name]), () => {
                     DBMS.removeGuide({ name: guide.name }).then(() => {
-                        if (guide === selectDictonagy)
+                        if (selectDictonagy != undefined && selectDictonagy.name === guide.name) {
                             selectDictonagy = undefined;
-                        exports.refresh();
+                            exports.refresh();
+                            if (allGuides.length > 1) {
+                                if (index == 0) {
+                                    const [lastName, lastGuide] = allGuides[allGuides.length - 1];
+                                    selectGuide(lastName);
+                                } else {
+                                    const [prefName, prefGuide] = allGuides[index - 1];
+                                    selectGuide(prefName);
+                                }
+                            } else {
+                                selectGuide(null);
+                            }
+                        } else {
+                            exports.refresh();
+                        }
                     }).catch(UI.handleError);
                 });
             });
-            //Обновляем ссылку на справочник... Я чувствую, что начинаю лажать
-            if (selectDictonagy == undefined || selectDictonagy.name == guide.name)
-                selectDictonagy = guide;
-
             U.addEl(content, el);
-        });
-        if (selectDictonagy != undefined)
-            selectGuide(selectDictonagy);
+        }
+        if (selectDictonagy != undefined) {
+            selectGuide(selectDictonagy.name);
+        } else if(allGuides.length > 0){
+            selectGuide(allGuides[0][0]);
+        } else {
+            U.hideEl(U.queryEl(`${root} .guide-panel`), true);
+        }
     }).catch(UI.handleError);
 };
 /**Выбрали словарь.
  * 
- * @param {*} guide словарь, который надо отобразить 
+ * @param {*} guideName название словаря, который надо отобразить 
  */
-function selectGuide(guide) {
-    selectDictonagy = guide;
+function selectGuide(guideName) {
     //Скрываем панель, если справочника не будет
-    U.hideEl(U.queryEl(`${root} .guide-panel`), guide === null);
-
-    if (guide === null) {
-        return;
-    }
-    U.hideEl(U.queryEl(`${root} .alert-no-items`), guide.rows.length != 0);
-    //Показать предупреждение, если нет записей
+    U.hideEl(U.queryEl(`${root} .guide-panel`), guideName === null);
+    U.hideEl(U.queryEl(`${root} .alert-no-items`), guideName !== null);
+    U.hideEl(U.queryEl(`${root} .alert-no-guides`), guideName !== null);
     //Очищаем все выделения старые
     U.queryEls(`${root} [guide-name] .select-button`).map(U.removeClass(R.__, 'btn-primary'));
-    //Выделяем по новой
-    const el = U.queryEl(`${root} [guide-name="${guide.name}"] .select-button`);
-    U.addClass(el, 'btn-primary');
+    if (guideName === null){
+        //Очищаем таблицу от старых записей
+        U.clearEl(U.queryEl('#guideRow'));
+        return;
+    }
 
-    const parentEl = el.parentElement.parentElement;
-    const entityList = U.queryEl(`${root} .entity-list`);
-    UI.scrollTo(entityList, parentEl);
 
-    //А теперь попробуем позаполнять табличку
-    const table = U.clearEl(U.queryEl('#guideRow'));
+    Promise.all([DBMS.getGuide({ guideName: guideName })]).then((results) => {
+        const [guide] = results;
+        selectDictonagy = guide;
+        U.hideEl(U.queryEl(`${root} .alert-no-items`), guide.rows.length != 0);
+        //Показать предупреждение, если нет записей
+        //Выделяем по новой
+        const el = U.queryEl(`${root} [guide-name="${guide.name}"] .select-button`);
+        U.addClass(el, 'btn-primary');
 
-    U.showEl(table, guide.rows.length !== 0);
+        const parentEl = el.parentElement.parentElement;
+        const entityList = U.queryEl(`${root} .entity-list`);
+        UI.scrollTo(entityList, parentEl);
 
-    R.ap([U.addEl(table)], guide.rows.map(row => appendRowToTable(guide, guide.scheme, row)));
+        //Очищаем таблицу от старых записей
+        const table = U.clearEl(U.queryEl('#guideRow'));
+        U.showEl(table, guide.rows.length !== 0);
+        //А теперь попробуем позаполнять табличку
+        R.ap([U.addEl(table)], guide.rows.map(row => appendRowToTable(guide, guide.scheme, row)));
+
+    }).catch(UI.handleError);
 }
 /**Создаёт новую строку в справочнике
  * 
@@ -110,7 +134,7 @@ function selectGuide(guide) {
  */
 function newGuideRow(index) {
     DBMS.createGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => {
-        exports.refresh();
+        selectGuide(selectDictonagy.name);
     }).catch((err) => UI.setError(dialog, err));
 }
 /**Сооружает строку таблицы и возвращает её
@@ -127,28 +151,38 @@ function appendRowToTable(guide, scheme, row) {
     //И русифицируем её
     L10n.localizeStatic(el);
     const panel = U.qee(el, '.guide-div');
+    let isHasTextArea = false;
     //А теперь для каждого элемента строки
     scheme.forEach(obj => {
         let input, sel, toNameObj, multiEnumSelect;
         switch (obj.type) {
             case 'text':
+                isHasTextArea = true;
                 input = U.makeEl('textarea');
-                /*const resize = onGChangeFieldValue(guide.name,index, undefined, obj.type, input, obj.name);
                 let timerId = undefined;
                 function outputsize() {
-                    if(input.style.height == input.offsetHeight) return;
-                    if(timerId != undefined){
+                    //Пока высота у нас неопределена - ну и фиг с ней
+                    if (input.style.height == undefined || input.style.height === "" || input.offsetHeight == 0) {
+                        if (row[obj.name].height > 0)
+                            input.style.height = row[obj.name].height + "px";
+                        return;
+                    }
+                    if (timerId != undefined) {
                         clearTimeout(timerId);
                     }
                     timerId = setTimeout(() => {
-                        resize(undefined);
+                        onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, undefined)(undefined);
                         timerId = undefined;
                     }, 250);
                 }
-                if(row[obj.name].height > 0)
-                    input.style.height = row[obj.name].height + "px";
-                new ResizeObserver(outputsize).observe(input);*/
+                new ResizeObserver(outputsize).observe(input);
                 U.addClass(input, 'profileTextInput');
+                U.setAttr(input, 'style', 'resize: vertical;');
+
+                U.listen(U.qee(el, '.resize'), 'click', () => {
+                    onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, -1)(undefined);
+                    selectGuide(guide.name);
+                });
                 break;
             case 'string':
                 input = U.makeEl('input');
@@ -177,14 +211,14 @@ function appendRowToTable(guide, scheme, row) {
                 U.setAttr(multiEnumSelect[0], 'multiple', 'multiple');
 
                 sel = multiEnumSelect.select2(U.arr2Select2(R.sort(CU.charOrdA, obj.value.split(','))));
-                sel.on('change', onGChangeFieldValue(guide.name, index, multiEnumSelect, obj.type, input, obj.name));
+                sel.on('change', onGChangeFieldValue(guide.name, index, multiEnumSelect, obj.type, multiEnumSelect, obj.name, undefined));
                 break;
             default:
                 throw new Errors.InternalError('errors-unexpected-switch-argument', [obj.type]);
         }
-
-        if (obj.type !== 'multiEnum') {
-            U.listen(input, 'change', onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name));
+        //Слушатель изменения состояния
+        if(obj.type !== 'multiEnum'){
+            U.listen(input, 'change', onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, undefined));
             U.addClass(input, 'form-control');
         }
         if (obj.type === 'checkbox') {
@@ -216,14 +250,13 @@ function appendRowToTable(guide, scheme, row) {
             U.addEl(panel, grupe);
         }
     });
-
+    //Отображем кнопку только тогда, когда есть текстовые поля
+    U.hideEl(U.qee(el, '.resize'), !isHasTextArea);
     //А теперь события!
-    U.listen(U.qee(el, '.create'), 'click', () => newGuideRow(index));
+    U.listen(U.qee(el, '.create'), 'click', () => newGuideRow(index + 1));
     U.listen(U.qee(el, '.remove'), 'click', () => {
         UI.confirm(L10n.getValue('dictionary-dialog_remove_item'), () => {
-            DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => {
-                exports.refresh();
-            }).catch((err) => UI.setError(dialog, err));
+            DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => { selectGuide(guide.name); }).catch((err) => UI.setError(dialog, err));
         });
     });
     return el;
@@ -234,10 +267,11 @@ function appendRowToTable(guide, scheme, row) {
  * @param {ineger} index номер строки
  * @param {Node} multiEnumSelect объект многовариантного выбора 
  * @param {string} type тип поля
- * @param {Node} input объект ввода, поле у пользователя
+ * @param {Node} input поле, которое изменилось
  * @param {string} fieldName название поля
+ * @param {ineger} newHeightTextArea новое значение высоты строки, только для текстового поля. Если передать undefined, то высчитывается автоматически
  */
-function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fieldName) {
+function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fieldName, newHeightTextArea) {
     return (event) => {
         if (multiEnumSelect && multiEnumSelect.prop('disabled')) {
             return; // we need to trigger change event on multiEnumSelect to update selection.
@@ -247,8 +281,8 @@ function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fie
         let value;
         switch (type) {
             case 'text':
-                value = {text: input.value, height: input.offsetHeight};
-            break;
+                value = { text: input.value, height: newHeightTextArea == undefined ?  input.offsetHeight : newHeightTextArea };
+                break;
             case 'string':
             case 'enum':
                 value = input.value;
@@ -265,7 +299,7 @@ function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fie
                 value = input.checked;
                 break;
             case 'multiEnum':
-                value = multiEnumSelect.val().join(',');
+                value = input.val().join(',');
                 break;
             default:
                 UI.handleError(new Errors.InternalError('errors-unexpected-switch-argument', [type]));
@@ -295,9 +329,33 @@ function renameGuide(dialog) {
         DBMS.renameGuide({ fromName, toName }).then(() => {
             toInput.value = '';
             dialog.hideDlg();
-            exports.refresh();
+            if (selectDictonagy.name === fromName) {
+                selectDictonagy = undefined;
+                exports.refresh();
+                selectGuide(toName);
+            } else {
+                exports.refresh();
+            }
         }).catch((err) => UI.setError(dialog, err));
     };
 }
 
+function filterOptions(event) {
+    const str = event.target.value.toLowerCase();
+
+    const els = U.queryEls(`${root} [primary-name]`);
+    els.forEach((el) => {
+        let isVisible = U.getAttr(el, 'primary-name').toLowerCase().indexOf(str) !== -1;
+        if (!isVisible && U.getAttr(el, 'secondary-name') !== null) {
+            isVisible = U.getAttr(el, 'secondary-name').toLowerCase().indexOf(str) !== -1;
+        }
+        U.hideEl(el, !isVisible);
+    });
+    if (U.queryEl(`${root} .hidden[primary-name] .select-button.btn-primary`) !== null || U.queryEl(`${root} [primary-name] .select-button.btn-primary`) === null) {
+        const els2 = U.queryEls(`${root} [primary-name]`).filter(R.pipe(U.hasClass(R.__, 'hidden'), R.not));
+        selectGuide(els2.length > 0 ? U.getAttr(els2[0], 'guide-name') : null);
+    } else {
+        //            U.queryEl(`${root} [primary-name] .select-button.btn-primary`).scrollIntoView();
+    }
+}
 // })(window.BriefingExport = {});
