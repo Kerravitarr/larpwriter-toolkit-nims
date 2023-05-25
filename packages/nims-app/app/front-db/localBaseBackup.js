@@ -58,7 +58,7 @@ module.exports = function (imports) {
      * 
      * @returns списко баз данных из памяти браузера
      */
-    function readLocalBases() {
+    exports.readLocalBases = function() {
         if (!window.indexedDB) {
             UI.alert(L10n.get('errors', 'indexeddb-is-not-found'));
             return Promise.resolve(null);

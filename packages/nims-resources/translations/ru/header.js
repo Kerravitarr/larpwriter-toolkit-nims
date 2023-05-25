@@ -13,6 +13,7 @@ module.exports = {
     'social-network': 'Социальная сеть',
     'profile-filter': 'Фильтр персонажей',
     'open-database': 'Загрузить базу из файла',
+    open_database_from_mem: 'Загрузить последнюю базу из памяти браузера',
     'save-database': 'Сохранить базу на диск',
     'create-database': 'Создать новую базу',
     docs: 'Документация',

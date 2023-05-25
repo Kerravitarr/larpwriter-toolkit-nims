@@ -47,7 +47,7 @@ if (MODE === 'DEV' && DEV_OPTS.ENABLE_TESTS) {
 
 // eslint-disable-next-line import/order
 // const { localAutoSave, runBaseSelectDialog, makeBackup } = require('front-db/localBaseBackup')({
-const { localAutoSave, runBaseSelectDialog, makeBackup } = require('../front-db/localBaseBackup')({
+const { localAutoSave, runBaseSelectDialog,readLocalBases,  makeBackup } = require('../front-db/localBaseBackup')({
     initBaseLoadBtn, onBaseLoaded, EmptyBase, DemoBase, LocalBackupCore
 });
 
@@ -143,6 +143,7 @@ function onDatabaseLoad() {
             addNavSeparator();
 
             if (isAdmin) {
+                addNavEl(makeLoadBaseFromMemButton());
                 addNavEl(makeLoadBaseButton());
             }
 
@@ -199,7 +200,7 @@ function loadEmptyBase() {
         }
     }).catch(UI.handleError);
 }
-
+/**Функция создания кнопки загрузки БД из файловой системы */
 function makeLoadBaseButton() {
     const button = makeButton('dataLoadButton icon-button', 'open-database', null, btnOpts);
     const input = U.makeEl('input');
@@ -209,6 +210,22 @@ function makeLoadBaseButton() {
     button.appendChild(input);
 
     initBaseLoadBtn(button, input, onBaseLoaded);
+    return button;
+}
+/**Функция создания кнопки загрузки последней БД из памяти браузера */
+function makeLoadBaseFromMemButton() {
+    const button = makeButton('dataLoadButton icon-button', 'open_database_from_mem', null, btnOpts);
+
+    button.addEventListener('click', (e) => {
+        readLocalBases().then((browserBases) => {
+            let max = (browserBases || []).reduce((prev, curr) => prev.Meta.saveTime > curr.Meta.saveTime ? prev : curr);
+            if(max != undefined){
+                DBMS.setDatabase({ database: max }).then(() => {
+                    onBaseLoaded(undefined);
+                }).catch(UI.handleError);
+            }
+        }).catch(err => console.error(err));
+    });
     return button;
 }
 

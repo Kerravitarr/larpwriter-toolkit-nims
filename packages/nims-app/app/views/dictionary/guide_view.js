@@ -80,6 +80,9 @@ exports.refresh = () => {
             });
             U.addEl(content, el);
         }
+        //Проверяем, существует-ли такой словарь. Нужно при загрузке новой БД, набело
+        if(selectDictonagy != undefined && allGuides.find(([nameGuide, guide]) => selectDictonagy.name == nameGuide) == undefined)
+            selectDictonagy = undefined;
         if (selectDictonagy != undefined) {
             selectGuide(selectDictonagy.name);
         } else if(allGuides.length > 0){
