@@ -6,81 +6,78 @@
 I created a fork of the project to improve it to fit my needs!
 I will change it when I want and how I want. If at least someone is interested, see the official repository. This is just a copy!
 
-# What is the project?
+# Набор инструментов мастера сюжетника (НИМС) - что это?
 
-This repo contains sources of larpwriter toolkit NIMS project (frontend, core and server).
+НИМС - это редактор для написания вводных для ролевых игр (РИ). Это его основная функция, и именно это он должен делать хорошо. Помимо этого, с его помощью решаются побочные задачи, но об этом позже.
 
-# Dev install
+НИМС реализован в виде интерактивной веб-страницы. Все, что вам нужно для работы с НИМС это веб-браузер. Проверялась работа программы в Firefox, Chrome и Internet Explorer. Для работы НИМСу не требуется соединение с интернетом, так же, как не требуется интернет для работы калькулятора.
 
-Installing monorepo manager Lerna:
+# Для пользователей
 
-`npm i -g lerna` 
+В релизах есть последняя версия программы. Чтобы пощупать её достаточно скачать архив, распокавать его и открыть страницу nims.html.
+Тут должно быть ещё одно предупреждение. НИМС - сложный комплекс со множеством настроек и вкладок. Чтобы было проще разобраться - посетите страницу группы в ВК ( http://vk.com/larp_nims) и ознакомтесь с обзором.
+Обзор даст общее представление о том, как пользоваться НИМСом, там отображены не все функции имеющиеся на данный момент.
 
-Installing project dev dependencies:
+# Для тех, кто хочет изучить код
+## Подготовка
 
-`npm i` 
-`npm run bootstrap` 
+0. Установите node.js
+Для сборки и запуска приложения следует использовать Lerna. Установить её можно командой: 
+1. `npm i -g lerna` 
+После чего устанавливаются зависимости:
+2. `npm i` 
+3. `npm run bootstrap` 
 
+## Запуск
+Существует две версии одного приложения: однопользовательская и серверная. Вторая позволяет развернуть сервер и сделать доступным НИМС не только Мастерам, но и Игрокам.
 
-# Dev run
-
-## Running development standalone version
-
+Однопользовательская версия запускается следующим образом:
 1. `npm run watch:standalone`
-2. Open http://localhost:8080/nims.html in browser.
+2. Открыть http://localhost:8080/nims.html в браузере.
 
-## Running development server version
-
+Серверная версия, которая НЕ тестировалась!!!, запусается следующим образом:
 1. `npm run watch:server`
+Это создаст папку `packages/nims-app/dist` в которой будет готовое собранная графическая часть
+2. Открыть http://localhost:3001/ и ввести логин/пароль. По умолчанию: admin/zxpoYR65
+3. По умолчанию серверное приложение использует пустую базу данных, так что ей нужно скормить или существующую или встроенную.
 
-It will create dist folder in `packages/nims-app` with frontend build.
+## Сборка
 
-2. Open http://localhost:3001/ 
+Lerna осуществляет главную функцию - она следит за изменениями файлов и, как только их заметит, тут-же обновляет страницу. Это удобно для разработки, а чтобы выкатить готовую версию нужно выполнить простенькую процедуру:
+1. Выполнить команду `npm run build:app`
+2. В папке ./dist окажется собранное приложение.
 
-Default login/password: admin/zxpoYR65
-
-3. Default base is empty. You need to load some base. You can download base example from standalone NIMS build or take it from nims-resources.
-
-#  Package description
+# Описание составляющих частей
 
 ## nims-app
-
-NIMS webclient interface - all pages and page control. Also DBMS tests are here too.
+Интерфейс, являющийся по совместительству и однопользовательским приложением. Тут описание всех страниц и управление ими.
+Тесты СУБД тут-же, они нужны чтобы не загрузить битый файл.
 
 ## nims-app-core
 
-Common utilities for webclient interface. Common UI, l10n, utils and autosave in browser local storage.
+Общие утилиты для интерфейса. Переводчик, автосохранение в браузере и т.д. - всё тут
 
 ## nims-dbms
 
-NIMS data engine APIs. Includes all APIs both general and server specific.
+API обработки данных. Именно через него происходит сохранение записей, обновление полей и т.д. Эта-же часть отвечает за проверку корректности работы приложения. Пользователь не должен видеть ошибок, но если он их видит - генеруются они, по большей части, именно тут.
 
 ## nims-dbms-core
 
-NIMS data engine core. Generic part and utilities.
+Тоже утилиты, только для БД
 
 ## nims-resources
 
-Data resources - localization files and NIMS base examples.
+Тут хранится перевод на другие языки. В настоящее время полноценно поддерживатется только Русский, но есть почти полностью реализованный Английский.
+В этом-же проекте лежит тестовая база данных.
 
 ## nims-server
 
-NIMS express server.
+А это отдельно сервер.
 
-## wiki
+# Послесловие
 
-Old outdated package.
-
-# Description (Outdated)
-
-This repo contains sources of larpwriter toolkit NIMS project (frontend, core, BUT NOT server) and derivative projects:
-
-1. Larpwriter toolkit NIMS - larpwriter software for writing rich backstory LARPs. [README RU](https://github.com/NtsDK/smtk-nims/blob/master/wiki/NIMS_RU.md), [README EN](https://github.com/NtsDK/smtk-nims/blob/master/wiki/NIMS_EN.md), [Geektimes post RU](https://geektimes.ru/post/292531/)
-1. Vampire The Masquerade character sheet - interactive web page with charlist. [YouTube Demo RU](https://www.youtube.com/watch?v=1zHviDjOrn4)
-1. Measurelook - scientific measures data storing and visualization. [README RU](https://github.com/NtsDK/smtk-nims/blob/master/wiki/MEASURELOOK_RU.md), [README EN](https://github.com/NtsDK/smtk-nims/blob/master/wiki/MEASURELOOK_EN.md), [habrahabr post RU](https://habrahabr.ru/post/344174/)
-1. Deus Ex Shop - Shop system for Deus Ex Machina LARP with was in 2017 near Moscow. [YouTube Demo RU](https://www.youtube.com/watch?v=GlgfL7RAqgE), [YouTube Demo EN](https://www.youtube.com/watch?v=M3XN6NM1tTg)
-1. Watches - information system for city game wathes in 2017 year. [YouTube Demo RU](https://www.youtube.com/watch?v=MQ5-ffq1Vco)
-
-[How to build projects RU](https://github.com/NtsDK/smtk-nims/blob/master/wiki/CONTRIBUTING.md)
-
-[Contributors EN](https://github.com/NtsDK/smtk-nims/blob/master/wiki/CONTRIBUTORS.md)
+Оригинальная идея принадлежит Timofey Rechkalov. Я же просто доработал некоторые моменты, которых мне не хватило в оригинальной идее
+Его сайт: http://trechkalov.com
+Группа VK посвящённая оригинальной версии: http://vk.com/larp_nims
+[YouTube канал автора](https://www.youtube.com/channel/UC8RDnWbZRcrIDVRYg-b0A1Q)
+[Большой обзор версии 0.7.2](https://vk.com/video3305695_456239337)

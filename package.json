@@ -36,6 +36,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "watch:standalone": "lerna run watch:standalone --stream",
-    "watch:server": "lerna run watch:server --stream"
+    "watch:server": "lerna run watch:server --stream",
+    "build:app": "cd ./packages/nims-app && npm run nims-build-app && mkdir -p ../../dist/ && mv ./dist/ ../../"
   }
 }
