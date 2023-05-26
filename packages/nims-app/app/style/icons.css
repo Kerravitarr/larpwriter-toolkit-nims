@@ -58,7 +58,10 @@ See the License for the specific language governing permissions and
   font-weight: 500;
 }
 .resize:before {
-  content: "\f424";
+  content: "\f31e";
+}
+.compress:before {
+  content: "\f78c";
 }
 .rename:before {
   content: "\f044";

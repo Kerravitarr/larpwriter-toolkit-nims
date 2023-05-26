@@ -81,11 +81,11 @@ exports.refresh = () => {
             U.addEl(content, el);
         }
         //Проверяем, существует-ли такой словарь. Нужно при загрузке новой БД, набело
-        if(selectDictonagy != undefined && allGuides.find(([nameGuide, guide]) => selectDictonagy.name == nameGuide) == undefined)
+        if (selectDictonagy != undefined && allGuides.find(([nameGuide, guide]) => selectDictonagy.name == nameGuide) == undefined)
             selectDictonagy = undefined;
         if (selectDictonagy != undefined) {
             selectGuide(selectDictonagy.name);
-        } else if(allGuides.length > 0){
+        } else if (allGuides.length > 0) {
             selectGuide(allGuides[0][0]);
         } else {
             U.hideEl(U.queryEl(`${root} .guide-panel`), true);
@@ -103,7 +103,7 @@ function selectGuide(guideName) {
     U.hideEl(U.queryEl(`${root} .alert-no-guides`), guideName !== null);
     //Очищаем все выделения старые
     U.queryEls(`${root} [guide-name] .select-button`).map(U.removeClass(R.__, 'btn-primary'));
-    if (guideName === null){
+    if (guideName === null) {
         //Очищаем таблицу от старых записей
         U.clearEl(U.queryEl('#guideRow'));
         return;
@@ -167,7 +167,7 @@ function appendRowToTable(guide, scheme, row) {
                     //Пока высота у нас неопределена - ну и фиг с ней
                     if (input.style.height == undefined || input.style.height === "" || input.offsetHeight == 0) {
                         if (row[obj.name].height > 0)
-                            input.style.height = row[obj.name].height + "px";
+                            input.style.height = (row[obj.name].height + 5) + "px";
                         return;
                     }
                     if (timerId != undefined) {
@@ -181,8 +181,14 @@ function appendRowToTable(guide, scheme, row) {
                 new ResizeObserver(outputsize).observe(input);
                 U.addClass(input, 'profileTextInput');
                 U.setAttr(input, 'style', 'resize: vertical;');
-
+                //Сбрасывает высоту арии таким образом, чтобы она стала аккурат под размер содержимого
                 U.listen(U.qee(el, '.resize'), 'click', () => {
+                    input.style.height = 'auto';
+                    input.style.height = (input.scrollHeight + 5) + 'px';
+                    onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, input.scrollHeight)(undefined);
+                });
+                //Сбрасывает высоту арии таким образом, чтобы она стала аккурат под размер содержимого
+                U.listen(U.qee(el, '.compress'), 'click', () => {
                     onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, -1)(undefined);
                     selectGuide(guide.name);
                 });
@@ -220,7 +226,7 @@ function appendRowToTable(guide, scheme, row) {
                 throw new Errors.InternalError('errors-unexpected-switch-argument', [obj.type]);
         }
         //Слушатель изменения состояния
-        if(obj.type !== 'multiEnum'){
+        if (obj.type !== 'multiEnum') {
             U.listen(input, 'change', onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, undefined));
             U.addClass(input, 'form-control');
         }
@@ -284,7 +290,7 @@ function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fie
         let value;
         switch (type) {
             case 'text':
-                value = { text: input.value, height: newHeightTextArea == undefined ?  input.offsetHeight : newHeightTextArea };
+                value = { text: input.value, height: newHeightTextArea == undefined ? input.offsetHeight : newHeightTextArea };
                 break;
             case 'string':
             case 'enum':

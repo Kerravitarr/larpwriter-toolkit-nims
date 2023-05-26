@@ -13,7 +13,7 @@ module.exports = function (imports) {
             $(dbDialog).modal('hide');
         });
 
-        readLocalBases().then((browserBases) => {
+        exports.readLocalBases().then((browserBases) => {
             U.addEls(U.qee(dbDialog, '.modal-body .backup-bases'), (browserBases || []).map((base, i) => {
                 const baseSelect = U.qmte('.backup-base-tmpl');
                 const input = U.qee(baseSelect, 'input');

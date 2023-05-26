@@ -27,6 +27,8 @@ module.exports = {
     activity: 'Активность',
     'show-characters': 'Отобразить персонажей',
     event: 'Событие',
+    'resize-event': 'Сделать высоту описания по содержимому',
+    'compress-event': 'Сбросить высоту описания по умолчанию',
 
     'add-character': 'Добавить персонажа',
     'add-character-title': 'Добавление персонажа в историю',

@@ -169,6 +169,13 @@ module.exports = (Stories) => {
             U.listen(U.qee(el, '.merge'), 'click', mergeEvents(index, event.name, events[index + 1].name));
         }
         U.listen(U.qee(el, '.remove'), 'click', removeEvent(event.name, index));
+        U.listen(U.qee(el, '.resize'), 'click', () => {
+            textInput.style.height = 'auto';
+            textInput.style.height = (textInput.scrollHeight + 5) + 'px';
+        });
+        U.listen(U.qee(el, '.compress'), 'click', () => {
+            textInput.style.height = '160px';
+        });        
 
         return el;
     }

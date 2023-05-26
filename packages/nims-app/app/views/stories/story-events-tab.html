@@ -8,7 +8,8 @@
   
   <template class="event-tmpl">
     <td><span class="event-number"></span></td>
-    <td><div class="story-events-div-main">
+    <td>
+      <div class="story-events-div-main">
         <div class="story-events-div-left">
           <input class="isStoryEditable  form-control event-name-input ">
         </div>
@@ -16,7 +17,7 @@
           <input class="isStoryEditable  form-control event-time ">
         </div>
       </div>
-      <textarea class="isStoryEditable  form-control event-text "></textarea></td>
+      <textarea class="isStoryEditable  form-control event-text " style="resize: vertical;"></textarea></td>
     <td>
       <div class="flex-column">
         <button class="btn btn-default btn-reduced fa-icon move event flex-0-0-auto isStoryEditable"
@@ -27,6 +28,10 @@
             l10n-title="stories-merge-events"></button>
         <button class="btn btn-default btn-reduced fa-icon remove event flex-0-0-auto isStoryEditable"
             l10n-title="stories-remove-event"></button>
+        <button class="btn btn-default btn-reduced fa-icon resize event flex-0-0-auto isStoryEditable"
+            l10n-title="stories-resize-event"></button>
+        <button class="btn btn-default btn-reduced fa-icon compress event flex-0-0-auto isStoryEditable"
+            l10n-title="stories-compress-event"></button>
       </div>
     </td>
   </template>
