@@ -542,7 +542,7 @@ See the License for the specific language governing permissions and
             });
         }
         function _replaceGuideEnumValue([{ guideName, nameField, defaultValue, newOptionsMap }] = []) {
-            _forEachRowGuide(this.database, guideName,nameField, (old) => {return newOptionsMap[enumValue] ? old : defaultValue;} );
+            _forEachRowGuide(this.database, guideName,nameField, (old) => {return newOptionsMap[old] ? old : defaultValue;} );
         }
         function _replaceGuideMultiEnumValue([{ guideName, nameField, defaultValue, newOptionsMap }] = []) {
             _forEachRowGuide(this.database, guideName,nameField, (old) => {return old === '' ? old : R.intersection(old.split(','), R.keys(newOptionsMap)).join(',');} );

@@ -167,14 +167,15 @@ function appendRowToTable(guide, scheme, row) {
                     //Пока высота у нас неопределена - ну и фиг с ней
                     if (input.style.height == undefined || input.style.height === "" || input.offsetHeight == 0) {
                         if (row[obj.name].height > 0)
-                            input.style.height = (row[obj.name].height + 5) + "px";
+                            input.style.height = (row[obj.name].height) + "px";
                         return;
                     }
                     if (timerId != undefined) {
                         clearTimeout(timerId);
                     }
                     timerId = setTimeout(() => {
-                        onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, undefined)(undefined);
+                        if(input.offsetHeight != 0) //Если input уже исчез с экрана, то тут будет 0. А нам это не надо!
+                            onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, undefined)(undefined);
                         timerId = undefined;
                     }, 250);
                 }
@@ -183,6 +184,15 @@ function appendRowToTable(guide, scheme, row) {
                 U.setAttr(input, 'style', 'resize: vertical;');
                 //Сбрасывает высоту арии таким образом, чтобы она стала аккурат под размер содержимого
                 U.listen(U.qee(el, '.resize'), 'click', () => {
+                    //Очищаем строку, чтобы она меньше места занимала
+                    while(true){
+                        let last = input.value.slice(-1);
+                        if(last === ' ' || last === '\n' || last === '\r' || last === '\t'){
+                            input.value = input.value.substring(0,input.value.length - 2);
+                        } else {
+                            break;
+                        }
+                    }
                     input.style.height = 'auto';
                     input.style.height = (input.scrollHeight + 5) + 'px';
                     onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, input.scrollHeight)(undefined);

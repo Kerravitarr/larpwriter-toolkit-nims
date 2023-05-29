@@ -120,15 +120,12 @@ See the License for the specific language governing permissions and
                     chain = [PC.createEntityCheck2(nameField, container.map(R.prop('name')), 'entity-lifeless-name', 'entity-of-dictionary-item'), PC.isInRange(selectedIndex, 0, container.length)];
                     PC.precondition(PC.chainCheck(chain), reject, () => {
                         let { value } = Constants.profileFieldTypes[itemType];
-                        //В справочниках немного различается эта графа. Возможно, когда вы это читаете, это уже не актуально... Однак пока
-                        if(itemType == 'text'){
-                            value = {text: '', height: -1};
-                        }
                         //Создаём объект
                         const dictionaryItem = { name: nameField, type: itemType, value, doExport: true };
                         //Укладываем его
                         container.splice(selectedIndex, 0, dictionaryItem);
-                        this.ee.emit('updateDictionaryItem', [{ guideName:nameDictionary, nameField: nameField, value:value }]);
+                        //В справочниках немного различается эта графа. Возможно, когда вы это читаете, это уже не актуально... Однак пока
+                        this.ee.emit('updateDictionaryItem', [{ guideName:nameDictionary, nameField: nameField, value: itemType == 'text' ? {text: '', height: -1} : value }]);
                         resolve();
                     });
                 });
@@ -451,7 +448,6 @@ See the License for the specific language governing permissions and
                                     newOptions = R.uniq(value.split(',').map(R.trim));
                                     missedValues = info.value.trim() === '' ? [] : R.difference(info.value.split(','), newOptions);
                                     newOptionsMap = R.zipObj(newOptions, R.repeat(true, newOptions.length));
-
                                     if (missedValues.length !== 0) {
                                         this.ee.emit(info.type === 'enum' ? 'replaceGuideEnumValue' : 'replaceGuideMultiEnumValue', [{guideName:guideName, nameField:itemName, defaultValue: newOptions[0], newOptionsMap}]);
                                     }
