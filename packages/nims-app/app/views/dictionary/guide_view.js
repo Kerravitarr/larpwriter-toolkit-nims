@@ -6,11 +6,13 @@ Autor: Terran
 const root = '.guide-view-tab ';
 /**Текущий выбранный словарь, у которого создаём поля */
 let selectDictonagy = undefined;
+/**Строка, на которую нужно отмотать таблицу. Если -1 или undefended, то отматывет к шапке */
+let selectRow = -1;
 
 exports.init = () => {
     exports.content = U.queryEl(root);
     //Слушаем событие добавления записей
-    U.listen(U.queryEl(`${root} .create`), 'click', () => newGuideRow(selectDictonagy.rows.length));
+    U.listen(U.queryEl(`${root} .create`), 'click', () => {selectRow = selectDictonagy.rows.length;newGuideRow(selectDictonagy.rows.length);});
     U.listen(U.queryEl(`${root} .entity-filter`), 'input', filterOptions);
 };
 
@@ -38,7 +40,7 @@ exports.refresh = () => {
             U.setAttr(el, 'primary-name', nameGuide);
             //Свойство по которому будем выделять словари
             U.setAttr(el, 'guide-name', nameGuide);
-            U.listen(U.qee(el, '.select-button'), 'click', () => { selectGuide(guide.name); });
+            U.listen(U.qee(el, '.select-button'), 'click', () => { selectRow =  undefined; selectGuide(guide.name); });
             U.setAttr(U.qee(el, '.rename'), 'title', L10n.getValue('dictionary-item_field_rename'));
             const removeBtn = U.qee(el, '.remove');
             U.setAttr(removeBtn, 'title', L10n.getValue('dictionary-item_field_remove'));
@@ -110,6 +112,7 @@ function selectGuide(guideName) {
     }
 
 
+
     Promise.all([DBMS.getGuide({ guideName: guideName })]).then((results) => {
         const [guide] = results;
         selectDictonagy = guide;
@@ -127,7 +130,15 @@ function selectGuide(guideName) {
         const table = U.clearEl(U.queryEl('#guideRow'));
         U.showEl(table, guide.rows.length !== 0);
         //А теперь попробуем позаполнять табличку
-        R.ap([U.addEl(table)], guide.rows.map(row => appendRowToTable(guide, guide.scheme, row)));
+        const tableRows = guide.rows.map(row => appendRowToTable(guide, guide.scheme, row));
+        R.ap([U.addEl(table)], tableRows);
+
+        //if(selectDictonagy == undefined || selectDictonagy.name != guideName)
+           // UI.scrollTo(tableRows, tableRows[0]);
+        if(selectRow == undefined || selectRow < 0 || tableRows.length == 0)
+            U.queryEl(`${root} .create`).scrollIntoView();
+        else
+            tableRows[Math.min(selectRow,tableRows.length - 1)].scrollIntoView();
 
     }).catch(UI.handleError);
 }
@@ -185,14 +196,7 @@ function appendRowToTable(guide, scheme, row) {
                 //Сбрасывает высоту арии таким образом, чтобы она стала аккурат под размер содержимого
                 U.listen(U.qee(el, '.resize'), 'click', () => {
                     //Очищаем строку, чтобы она меньше места занимала
-                    while(true){
-                        let last = input.value.slice(-1);
-                        if(last === ' ' || last === '\n' || last === '\r' || last === '\t'){
-                            input.value = input.value.substring(0,input.value.length - 2);
-                        } else {
-                            break;
-                        }
-                    }
+                    input.value = input.value.trim();
                     input.style.height = 'auto';
                     input.style.height = (input.scrollHeight + 5) + 'px';
                     onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, input.scrollHeight)(undefined);
@@ -272,10 +276,10 @@ function appendRowToTable(guide, scheme, row) {
     //Отображем кнопку только тогда, когда есть текстовые поля
     U.hideEl(U.qee(el, '.resize'), !isHasTextArea);
     //А теперь события!
-    U.listen(U.qee(el, '.create'), 'click', () => newGuideRow(index + 1));
+    U.listen(U.qee(el, '.create'), 'click', () => {selectRow = index + 1; newGuideRow(index + 1);});
     U.listen(U.qee(el, '.remove'), 'click', () => {
         UI.confirm(L10n.getValue('dictionary-dialog_remove_item'), () => {
-            DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => { selectGuide(guide.name); }).catch((err) => UI.setError(dialog, err));
+            DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => { selectRow = index - 1;selectGuide(guide.name); }).catch((err) => UI.setError(dialog, err));
         });
     });
     return el;
