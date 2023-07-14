@@ -146,7 +146,8 @@ function updateFilter(event) {
         showPersonalStoriesByEvents();
     }
 }
-
+/**Функция раскрывает истории по Героям
+ */
 function showPersonalStoriesByCharacters() {
     const eventRows = U.queryElEls(exports.content, '.eventRow-dependent');
     eventRows.map(U.removeClass(R.__, 'hidden'));
@@ -158,13 +159,18 @@ function showPersonalStoriesByCharacters() {
 
     updateSettings('characterNames', characterNames);
 }
-
+/**ФУнкция раскрывает истории по Событиям */
 function showPersonalStoriesByEvents() {
+    //Показывает список названий событий
     U.queryElEls(exports.content, 'div[dependent-on-character]').map(U.removeClass(R.__, 'hidden'));
+    //Скрывает все события
     U.queryElEls(exports.content, '.eventRow-dependent').map(U.addClass(R.__, 'hidden'));
 
+    //Открывает интересующие нас события
     const eventIndexes = U.nl2array(U.queryEl('#events-eventSelector').selectedOptions).map(opt => opt.eventIndex222);
-    eventIndexes.forEach(index => U.removeClass(U.queryEls(`.${index}-dependent`)[0], 'hidden'));
+    eventIndexes.forEach(index => {U.removeClass(U.queryEls(`.a${index}-dependent`)[0], 'hidden')});
+
+    //Обновляет нстройки
     updateSettings('eventIndexes', eventIndexes);
 }
 
@@ -248,7 +254,7 @@ function buildAdaptationInterface(storyName, characterNames, events, areAdaptati
 
     U.addEls(div, events.map((event) => {
         const row = U.qmte(`${root} .adaptation-row-tmpl`);
-        U.addClass(row, `${event.index}-dependent`);
+        U.addClass(row, `a${event.index}-dependent`);
         row.dependsOnCharacters = R.keys(event.characters);
         U.addEl(U.qee(row, '.eventMainPanelRow-left'), exports.makeOriginCard(event, metaInfo, storyName, {
 
