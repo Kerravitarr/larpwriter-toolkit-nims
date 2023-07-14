@@ -349,11 +349,11 @@ function makeRelation(nameFrom, nameTo, nodeName, dashes){
     return {
         from: CHAR_PREFIX + nameFrom,
         to: CHAR_PREFIX + nameTo,
-        color: Constants.snRelationColors[nodeName],
+        color: Constants.snRelationColors[nodeName], //Цвет ребра
         width: 2,
-        hoverWidth: 4,
-        title: CU.strFormat(L10n.getValue('briefings-' + nodeName),[nameFrom, nameTo]),
-        dashes: dashes
+        hoverWidth: 4,                                  //Ширина края при наведении, выделение ребра
+        title: CU.strFormat(L10n.getValue('briefings-' + nodeName),[nameFrom, nameTo]), //Подпись
+        dashes: dashes,                                 //Если true, то будет пунктирная линия
     };
 }
 /**
@@ -367,7 +367,7 @@ function makeRelation(nameFrom, nameTo, nodeName, dashes){
  */
 function makeDRelation(nameFrom, nameTo, nodeName, isFrom, dashes){
     let relation = makeRelation(nameFrom, nameTo, nodeName, dashes);
-    relation.arrows = isFrom ? 'to' : 'from';
+    relation.arrows = isFrom ? 'to' : 'from'; //Стрелка
     return relation;
 }
 
@@ -386,8 +386,11 @@ function getRelationEdges() {
         /**Все связи персонажа */
         const essence = rel.essence;
         if (essence.length === 0) {
-            if (checked('neutral'))
-                arr.push(makeRelation(starter,ender,'neutral',[1, 10]));
+            if (checked('neutral')){
+                let relation = makeRelation(starter,ender,'neutral',[1, 10]);
+                relation.physics = false; //Убираем физику, пусть знакомые не тянутся друг к другу
+                arr.push(relation);
+            }
         } else {
             if (checked('allies') && R.contains('allies', essence)) 
                 arr.push(makeRelation(starter,ender,'allies'));
