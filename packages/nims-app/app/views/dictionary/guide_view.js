@@ -8,6 +8,8 @@ const root = '.guide-view-tab ';
 let selectDictonagy = undefined;
 /**Строка, на которую нужно отмотать таблицу. Если -1 или undefended, то отматывет к шапке */
 let selectRow = -1;
+/**Активные, на текущий момент, фильтры */
+let filters = {};
 
 exports.init = () => {
     exports.content = U.queryEl(root);
@@ -101,10 +103,12 @@ exports.refresh = () => {
 function selectGuide(guideName) {
     //Скрываем панель, если справочника не будет
     U.hideEl(U.queryEl(`${root} .guide-panel`), guideName === null);
+    U.hideEl(U.queryEl(`${root} .guide-filter-panel`), guideName === null);
     U.hideEl(U.queryEl(`${root} .alert-no-items`), guideName !== null);
     U.hideEl(U.queryEl(`${root} .alert-no-guides`), guideName !== null);
     //Очищаем все выделения старые
     U.queryEls(`${root} [guide-name] .select-button`).map(U.removeClass(R.__, 'btn-primary'));
+    filters = {};
     if (guideName === null) {
         //Очищаем таблицу от старых записей
         U.clearEl(U.queryEl('#guideRow'));
@@ -116,6 +120,9 @@ function selectGuide(guideName) {
     Promise.all([DBMS.getGuide({ guideName: guideName })]).then((results) => {
         const [guide] = results;
         selectDictonagy = guide;
+        U.hideEl(U.queryEl(`${root} .guide-filter-panel`), guide.rows.length === 0);
+        if(guide.rows.length != 0 && !U.hasClass(U.queryEl(`${root} .guide-filter-panel div.panel-body`), 'hidden'))
+            U.queryEl(`${root} .guide-filter-panel h3.panel-title`).click();
         U.hideEl(U.queryEl(`${root} .alert-no-items`), guide.rows.length != 0);
         //Показать предупреждение, если нет записей
         //Выделяем по новой
@@ -133,8 +140,14 @@ function selectGuide(guideName) {
         const tableRows = guide.rows.map(row => appendRowToTable(guide, guide.scheme, row));
         R.ap([U.addEl(table)], tableRows);
 
-        //if(selectDictonagy == undefined || selectDictonagy.name != guideName)
-           // UI.scrollTo(tableRows, tableRows[0]);
+        //Очищаем таблицу фильтра от старых записей
+        const tableFilters = U.clearEl(U.queryEl('#guideFilters'));
+        U.showEl(tableFilters, guide.scheme.length !== 0);
+        //А теперь попробуем позаполнять табличку
+        const tableFilterRows = guide.scheme.map(row => appendRowFilterToTable(guide, row));
+        R.ap([U.addEl(tableFilters)], tableFilterRows);
+
+        //Отматываем на нужную строку справочника
         if(selectRow == undefined || selectRow < 0 || tableRows.length == 0)
             U.queryEl(`${root} .create`).scrollIntoView();
         else
@@ -162,6 +175,7 @@ function appendRowToTable(guide, scheme, row) {
     const index = guide.rows.indexOf(row);
     //Создаём нашу строку
     const el = U.wrapEl('tr', U.qte(`${root} .guide-row-tmpl`));
+    U.setAttr( U.qee(el, '.panel-body'), 'index',index);
     //И русифицируем её
     L10n.localizeStatic(el);
     const panel = U.qee(el, '.guide-div');
@@ -253,6 +267,7 @@ function appendRowToTable(guide, scheme, row) {
         } else {
             input.value = row[obj.name];
         }
+        //А теперь добавляем элемент на панель
         if (obj.type === 'text') {
             let label = U.makeEl('label');
             U.addClass(label, 'col-xs-11 control-label');
@@ -284,6 +299,93 @@ function appendRowToTable(guide, scheme, row) {
     });
     return el;
 }
+/**Сооружает строку таблицы фильтров и возвращает её
+ * 
+ * @param {*} guide гайд, чья строка
+ * @param {*} filter тип поля для фильтрации
+ * @returns панельска строки
+ */
+function appendRowFilterToTable(guide, filter) {
+    //Создаём нашу строку
+    const el = U.wrapEl('tr', U.qte(`${root} .entity-filter-item-tmpl`));
+    //И русифицируем её
+    L10n.localizeStatic(el);
+
+    let input = undefined, sel, toNameObj;
+    switch (filter.type) {
+        case 'text':
+        case 'string':
+            input = U.makeEl('input');
+            U.setAttr(input, 'style', 'width: 100%;');
+            U.listen(input, 'input', (event) => {
+                const value = input.value.toLowerCase();
+                if(value == "") filters[filter.name] = undefined;
+                else filters[filter.name] = {type: filter.type, value: value};
+                onGChangeFilterValue(guide.rows, filters);
+            });
+            break;
+        case 'enum':
+        case 'multiEnum':
+            let multiEnumSelect = $('<select></select>');
+            U.setAttr(multiEnumSelect[0], 'style', 'width: 100%;');
+            U.addClass(multiEnumSelect[0], 'common-select');
+            U.addClass(multiEnumSelect[0], 'profileStringInput');
+            [input] = $('<span></span>').append(multiEnumSelect);
+            U.setAttr(multiEnumSelect[0], 'multiple', 'multiple');
+
+            sel = multiEnumSelect.select2(U.arr2Select2(R.sort(CU.charOrdA, filter.value.split(','))));
+            sel.on('change', (event) => {
+                const values = multiEnumSelect.val();
+                if(values.length == 0) filters[filter.name] = undefined;
+                else filters[filter.name] = {type: filter.type, value: values};
+                onGChangeFilterValue(guide.rows, filters);
+            });
+            break;
+       /* case 'number':
+            input = U.makeEl('input');
+            input.type = 'number';
+            break;
+        case 'checkbox':
+            input = U.makeEl('input');
+            input.type = 'checkbox';
+            break;
+        case 'enum':
+        case 'multiEnum':
+            multiEnumSelect = $('<select></select>');
+            U.setAttr(multiEnumSelect[0], 'style', 'width: 100%;');
+            U.addClass(multiEnumSelect[0], 'common-select');
+            U.addClass(multiEnumSelect[0], 'profileStringInput');
+            [input] = $('<span></span>').append(multiEnumSelect);
+            U.setAttr(multiEnumSelect[0], 'multiple', 'multiple');
+
+            sel = multiEnumSelect.select2(U.arr2Select2(R.sort(CU.charOrdA, filter.value.split(','))));
+            sel.on('change', onGChangeFilterValue(filter.type, multiEnumSelect, filter.name, guide.rows));
+            break;*/
+        default:
+            //throw new Errors.InternalError('errors-unexpected-switch-argument', [filter.type]);
+    }
+    //Слушатель изменения состояния
+   /* if (filter.type !== 'multiEnum') {
+        U.listen(input, 'change', onGChangeFilterValue(filter.type,input, filter.name, guide.rows));
+        U.addClass(input, 'form-control');
+    }*/
+    //А теперь добавляем стрку на панель
+    let grupe = U.makeEl('div');
+    U.addClass(grupe, 'form-group');
+    let label = U.makeEl('label');
+    U.addClass(label, 'col-xs-2 control-label');
+    U.addEl(label, U.makeText(filter.name + ': '));
+    U.addEl(grupe, label);
+    let divInput = U.makeEl('div');
+    U.addClass(divInput, 'col-xs-10 form-control-static');
+    if(input != undefined)
+        U.addEl(divInput, input);
+    U.addEl(grupe, divInput);
+    U.addEl(el, grupe);
+
+    return el;
+}
+
 /**Генератор функции, которая сработает при изменении данных в поле записи
  * 
  * @param {string} guideName имя гайда
@@ -336,6 +438,59 @@ function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fie
             value
         }).catch(UI.processError());
     }
+}
+/**Функция, которая сработает при изменении данных в поле фильтров
+ * @param {Guide.rows} rows все строки гадйда
+ * @param {Object} rules активные фильтры
+ */
+function onGChangeFilterValue(rows, rules){
+    const els = U.queryEls(`${root} [guide-row]`);
+
+    els.forEach((el) => {
+        const index = U.getAttr(el, 'index');
+        if(index >= rows.length) return;
+        const row = rows[index];
+        let isVisible = true;
+        for (var fieldName of Object.keys(rules)) {
+            const value = rules[fieldName];
+            if(value == undefined) continue;
+            switch(value.type){
+                case 'text':
+                    isVisible &= row[fieldName].text.toLowerCase().indexOf(value.value) >= 0;
+                break;
+                case 'string':
+                    isVisible &= row[fieldName].toLowerCase().indexOf(value.value) >= 0;
+                break;
+                case 'enum':
+                    let isHase = false;
+                    for(const v of value.value){
+                        if(v === row[fieldName]){
+                            isHase = true;
+                            break;
+                        }
+                    }
+                    isVisible &= isHase;
+                break;
+                case 'multiEnum':
+                    let isHasm = false;
+                    const fieldValues = row[fieldName].split(',');
+                    for(const v of value.value){
+                        for(const f of fieldValues){
+                            if(v === f){
+                                isHasm = true;
+                                break;
+                            }
+                        }
+                        if(isHasm) break;
+                    }
+                    isVisible &= isHasm;
+                break;
+                default:
+                    throw new Errors.InternalError('errors-unexpected-switch-argument', [filter.type]);
+            };
+        };
+        U.hideEl(el, !isVisible);
+    });
 }
 
 /**Генератор функции, которая будет выбрана при нажатии кнопки переименовании словаря

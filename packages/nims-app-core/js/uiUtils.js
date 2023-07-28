@@ -486,7 +486,14 @@ exports.onChangeAdaptationReadyStatus2 = (callback) => (event) => {
         callback(value);
     }).catch(exports.handleError);
 };
-
+/**Создаёт раскрывающуюся панель
+ * @param {string} title заголовок панели
+ * @param {Element} content что на этой панели должно быть показано
+ * @returns объект из трёх полей:
+ *          panel - сама готовая панель
+ *          contentDiv - тело панели, где находится content
+ *          a - скрывающий панель элемент
+ */
 exports.makePanelCore = (title, content) => {
     const panel = U.addClasses(U.makeEl('div'), ['panel', 'panel-default']);
     const h3 = U.addClass(U.addEl(U.makeEl('h3'), title), 'panel-title');

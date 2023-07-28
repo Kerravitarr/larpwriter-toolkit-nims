@@ -18,6 +18,19 @@
       </div>
       <!--Панелька с отображением записей выбранного справочника-->
       <div class="col-xs-9 content-column height-100p" style="overflow-x: auto;">
+        <!--Панелька с фильтром-->
+        <div class="panel panel-default guide-filter-panel">
+          <div class="panel-heading">
+            <a href="#/" panel-toggler=".guide-filter-panel div.guide-filter-panel-body" class="expanded"> <h3 class="panel-title" l10n-id="dictionary-filter_panel_header"></h3> </a>
+          </div>
+          <div class="panel-body guide-filter-panel-body">
+            <!--Таблица всех фильтров-->
+            <table class="table table-bordered">
+              <tbody id="guideFilters"></tbody>
+            </table>
+          </div>
+        </div>
+        <!--Кнопка добавить запись-->
         <div class="guide-panel panel-default">
           <div class="panel-body first-panel">
             <div class="flex-row entity-toolbar">
@@ -29,7 +42,8 @@
             <div class="alert-no-items alert alert-info" l10n-id="dictionary-alert_guide_not_items"></div>
           </div>
         </div>
-        <table class="table table-bordered">
+        <!--Таблица всех записей-->
+        <table class="table table-bordered table-gauide-item">
           <tbody id="guideRow"></tbody>
         </table>
       </div>
@@ -50,17 +64,27 @@
 
   <!--Шаблон для одной строки записи справочника-->
   <template class="guide-row-tmpl">
-    <td class="panel-body height-100p">
+    <td class="panel-body height-100p" guide-row>
       <div class="flex-row">
         <div class="margin-right-8 flex-1-1-auto"></div>
         <div class="flex-0-0-auto">
-          <button class="btn btn-default btn-reduced fa-icon compress event flex-0-0-auto" l10n-title="dictionary-compress_fields"></button>
-          <button class="btn btn-default btn-reduced fa-icon resize event flex-0-0-auto" l10n-title="dictionary-resize_fields"></button>
-          <button class="btn btn-default btn-reduced fa-icon create event flex-0-0-auto" l10n-title="dictionary-create_rows"></button>
-          <button class="btn btn-default btn-reduced fa-icon remove event flex-0-0-auto"  l10n-title="dictionary-remove_rows"></button>
+          <button class="btn btn-default btn-reduced fa-icon compress event flex-0-0-auto"
+            l10n-title="dictionary-compress_fields"></button>
+          <button class="btn btn-default btn-reduced fa-icon resize event flex-0-0-auto"
+            l10n-title="dictionary-resize_fields"></button>
+          <button class="btn btn-default btn-reduced fa-icon create event flex-0-0-auto"
+            l10n-title="dictionary-create_rows"></button>
+          <button class="btn btn-default btn-reduced fa-icon remove event flex-0-0-auto"
+            l10n-title="dictionary-remove_rows"></button>
         </div>
       </div>
       <div class="guide-div">
     </td>
+  </template>
+
+  <!--Шаблон для вставки строчки фильтра-->
+  <template class="entity-filter-item-tmpl">
+    <div class="btn-group flex-row">
+    </div>
   </template>
 </div>
