@@ -10,12 +10,16 @@ let selectDictonagy = undefined;
 let selectRow = -1;
 /**Активные, на текущий момент, фильтры */
 let filters = {};
+/**Массив всех текстовых полей для их массовой скрутки/раскрутки */
+let allTextFields = [];
 
 exports.init = () => {
     exports.content = U.queryEl(root);
     //Слушаем событие добавления записей
-    U.listen(U.queryEl(`${root} .create`), 'click', () => {selectRow = selectDictonagy.rows.length;newGuideRow(selectDictonagy.rows.length);});
+    U.listen(U.queryEl(`${root} .create`), 'click', () => { selectRow = selectDictonagy.rows.length; newGuideRow(selectDictonagy.rows.length); });
     U.listen(U.queryEl(`${root} .entity-filter`), 'input', filterOptions);
+    U.listen(U.queryEl(`${root} .compress`), 'click', () => allTextFields.forEach(pair => pair.smal()));
+    U.listen(U.queryEl(`${root} .resize`), 'click', () => allTextFields.forEach(pair => pair.big()));
 };
 
 
@@ -42,7 +46,7 @@ exports.refresh = () => {
             U.setAttr(el, 'primary-name', nameGuide);
             //Свойство по которому будем выделять словари
             U.setAttr(el, 'guide-name', nameGuide);
-            U.listen(U.qee(el, '.select-button'), 'click', () => { selectRow =  undefined; selectGuide(guide.name); });
+            U.listen(U.qee(el, '.select-button'), 'click', () => { selectRow = undefined; selectGuide(guide.name); });
             U.setAttr(U.qee(el, '.rename'), 'title', L10n.getValue('dictionary-item_field_rename'));
             const removeBtn = U.qee(el, '.remove');
             U.setAttr(removeBtn, 'title', L10n.getValue('dictionary-item_field_remove'));
@@ -117,11 +121,13 @@ function selectGuide(guideName) {
 
 
 
-    Promise.all([DBMS.getGuide({ guideName: guideName })]).then((results) => {
+    Promise.all([DBMS.getGuide({ guideName: guideName })]).then(async (results) => {
         const [guide] = results;
         selectDictonagy = guide;
         U.hideEl(U.queryEl(`${root} .guide-filter-panel`), guide.rows.length === 0);
-        if(guide.rows.length != 0 && !U.hasClass(U.queryEl(`${root} .guide-filter-panel div.panel-body`), 'hidden'))
+        U.hideEl(U.queryEl(`${root} .compress`), guide.rows.length === 0);
+        U.hideEl(U.queryEl(`${root} .resize`), guide.rows.length === 0);
+        if (guide.rows.length != 0 && !U.hasClass(U.queryEl(`${root} .guide-filter-panel div.panel-body`), 'hidden'))
             U.queryEl(`${root} .guide-filter-panel h3.panel-title`).click();
         U.hideEl(U.queryEl(`${root} .alert-no-items`), guide.rows.length != 0);
         //Показать предупреждение, если нет записей
@@ -129,12 +135,9 @@ function selectGuide(guideName) {
         const el = U.queryEl(`${root} [guide-name="${guide.name}"] .select-button`);
         U.addClass(el, 'btn-primary');
 
-        const parentEl = el.parentElement.parentElement;
-        const entityList = U.queryEl(`${root} .entity-list`);
-        UI.scrollTo(entityList, parentEl);
-
         //Очищаем таблицу от старых записей
         const table = U.clearEl(U.queryEl('#guideRow'));
+        allTextFields = [];
         U.showEl(table, guide.rows.length !== 0);
         //А теперь попробуем позаполнять табличку
         const tableRows = guide.rows.map(row => appendRowToTable(guide, guide.scheme, row));
@@ -148,11 +151,13 @@ function selectGuide(guideName) {
         R.ap([U.addEl(tableFilters)], tableFilterRows);
 
         //Отматываем на нужную строку справочника
-        if(selectRow == undefined || selectRow < 0 || tableRows.length == 0)
-            U.queryEl(`${root} .create`).scrollIntoView();
+        let scrollTo;
+        if (selectRow == undefined || selectRow < 0 || tableRows.length == 0)
+            scrollTo = U.queryEl(`${root} .guide-filter-panel`)
         else
-            tableRows[Math.min(selectRow,tableRows.length - 1)].scrollIntoView();
-
+            scrollTo = tableRows[Math.min(selectRow, tableRows.length - 1)]
+        UI.scrollTo(U.queryEl(`${root} .guide-right-panel`), scrollTo);
+        //scrollTo.scrollIntoView();
     }).catch(UI.handleError);
 }
 /**Создаёт новую строку в справочнике
@@ -175,7 +180,7 @@ function appendRowToTable(guide, scheme, row) {
     const index = guide.rows.indexOf(row);
     //Создаём нашу строку
     const el = U.wrapEl('tr', U.qte(`${root} .guide-row-tmpl`));
-    U.setAttr( U.qee(el, '.panel-body'), 'index',index);
+    U.setAttr(U.qee(el, '.panel-body'), 'index', index);
     //И русифицируем её
     L10n.localizeStatic(el);
     const panel = U.qee(el, '.guide-div');
@@ -199,7 +204,7 @@ function appendRowToTable(guide, scheme, row) {
                         clearTimeout(timerId);
                     }
                     timerId = setTimeout(() => {
-                        if(input.offsetHeight != 0) //Если input уже исчез с экрана, то тут будет 0. А нам это не надо!
+                        if (input.offsetHeight != 0) //Если input уже исчез с экрана, то тут будет 0. А нам это не надо!
                             onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, undefined)(undefined);
                         timerId = undefined;
                     }, 250);
@@ -207,19 +212,23 @@ function appendRowToTable(guide, scheme, row) {
                 new ResizeObserver(outputsize).observe(input);
                 U.addClass(input, 'profileTextInput');
                 U.setAttr(input, 'style', 'resize: vertical;');
-                //Сбрасывает высоту арии таким образом, чтобы она стала аккурат под размер содержимого
-                U.listen(U.qee(el, '.resize'), 'click', () => {
+                //Сбрасывает высоту арии таким образом, чтобы она стала аккурат под размер содержимого\
+                const smal = () => {
                     //Очищаем строку, чтобы она меньше места занимала
                     input.value = input.value.trim();
                     input.style.height = 'auto';
                     input.style.height = (input.scrollHeight + 5) + 'px';
                     onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, input.scrollHeight)(undefined);
-                });
+                };
                 //Сбрасывает высоту арии таким образом, чтобы она стала аккурат под размер содержимого
-                U.listen(U.qee(el, '.compress'), 'click', () => {
+                const big = () => {
                     onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, -1)(undefined);
                     selectGuide(guide.name);
-                });
+                }
+
+                U.listen(U.qee(el, '.resize'), 'click', smal);
+                U.listen(U.qee(el, '.compress'), 'click', big);
+                allTextFields.push({ smal: smal, big: big });
                 break;
             case 'string':
                 input = U.makeEl('input');
@@ -291,10 +300,10 @@ function appendRowToTable(guide, scheme, row) {
     //Отображем кнопку только тогда, когда есть текстовые поля
     U.hideEl(U.qee(el, '.resize'), !isHasTextArea);
     //А теперь события!
-    U.listen(U.qee(el, '.create'), 'click', () => {selectRow = index + 1; newGuideRow(index + 1);});
+    U.listen(U.qee(el, '.create'), 'click', () => { selectRow = index + 1; newGuideRow(index + 1); });
     U.listen(U.qee(el, '.remove'), 'click', () => {
         UI.confirm(L10n.getValue('dictionary-dialog_remove_item'), () => {
-            DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => { selectRow = index - 1;selectGuide(guide.name); }).catch((err) => UI.setError(dialog, err));
+            DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => { selectRow = index - 1; selectGuide(guide.name); }).catch((err) => UI.setError(dialog, err));
         });
     });
     return el;
@@ -319,8 +328,8 @@ function appendRowFilterToTable(guide, filter) {
             U.setAttr(input, 'style', 'width: 100%;');
             U.listen(input, 'input', (event) => {
                 const value = input.value.toLowerCase();
-                if(value == "") filters[filter.name] = undefined;
-                else filters[filter.name] = {type: filter.type, value: value};
+                if (value == "") filters[filter.name] = undefined;
+                else filters[filter.name] = { type: filter.type, value: value };
                 onGChangeFilterValue(guide.rows, filters);
             });
             break;
@@ -336,39 +345,39 @@ function appendRowFilterToTable(guide, filter) {
             sel = multiEnumSelect.select2(U.arr2Select2(R.sort(CU.charOrdA, filter.value.split(','))));
             sel.on('change', (event) => {
                 const values = multiEnumSelect.val();
-                if(values.length == 0) filters[filter.name] = undefined;
-                else filters[filter.name] = {type: filter.type, value: values};
+                if (values.length == 0) filters[filter.name] = undefined;
+                else filters[filter.name] = { type: filter.type, value: values };
                 onGChangeFilterValue(guide.rows, filters);
             });
             break;
-       /* case 'number':
-            input = U.makeEl('input');
-            input.type = 'number';
-            break;
-        case 'checkbox':
-            input = U.makeEl('input');
-            input.type = 'checkbox';
-            break;
-        case 'enum':
-        case 'multiEnum':
-            multiEnumSelect = $('<select></select>');
-            U.setAttr(multiEnumSelect[0], 'style', 'width: 100%;');
-            U.addClass(multiEnumSelect[0], 'common-select');
-            U.addClass(multiEnumSelect[0], 'profileStringInput');
-            [input] = $('<span></span>').append(multiEnumSelect);
-            U.setAttr(multiEnumSelect[0], 'multiple', 'multiple');
-
-            sel = multiEnumSelect.select2(U.arr2Select2(R.sort(CU.charOrdA, filter.value.split(','))));
-            sel.on('change', onGChangeFilterValue(filter.type, multiEnumSelect, filter.name, guide.rows));
-            break;*/
+        /* case 'number':
+             input = U.makeEl('input');
+             input.type = 'number';
+             break;
+         case 'checkbox':
+             input = U.makeEl('input');
+             input.type = 'checkbox';
+             break;
+         case 'enum':
+         case 'multiEnum':
+             multiEnumSelect = $('<select></select>');
+             U.setAttr(multiEnumSelect[0], 'style', 'width: 100%;');
+             U.addClass(multiEnumSelect[0], 'common-select');
+             U.addClass(multiEnumSelect[0], 'profileStringInput');
+             [input] = $('<span></span>').append(multiEnumSelect);
+             U.setAttr(multiEnumSelect[0], 'multiple', 'multiple');
+ 
+             sel = multiEnumSelect.select2(U.arr2Select2(R.sort(CU.charOrdA, filter.value.split(','))));
+             sel.on('change', onGChangeFilterValue(filter.type, multiEnumSelect, filter.name, guide.rows));
+             break;*/
         default:
-            //throw new Errors.InternalError('errors-unexpected-switch-argument', [filter.type]);
+        //throw new Errors.InternalError('errors-unexpected-switch-argument', [filter.type]);
     }
     //Слушатель изменения состояния
-   /* if (filter.type !== 'multiEnum') {
-        U.listen(input, 'change', onGChangeFilterValue(filter.type,input, filter.name, guide.rows));
-        U.addClass(input, 'form-control');
-    }*/
+    /* if (filter.type !== 'multiEnum') {
+         U.listen(input, 'change', onGChangeFilterValue(filter.type,input, filter.name, guide.rows));
+         U.addClass(input, 'form-control');
+     }*/
     //А теперь добавляем стрку на панель
     let grupe = U.makeEl('div');
     U.addClass(grupe, 'form-group');
@@ -378,7 +387,7 @@ function appendRowFilterToTable(guide, filter) {
     U.addEl(grupe, label);
     let divInput = U.makeEl('div');
     U.addClass(divInput, 'col-xs-10 form-control-static');
-    if(input != undefined)
+    if (input != undefined)
         U.addEl(divInput, input);
     U.addEl(grupe, divInput);
     U.addEl(el, grupe);
@@ -443,48 +452,48 @@ function onGChangeFieldValue(guideName, index, multiEnumSelect, type, input, fie
  * @param {Guide.rows} rows все строки гадйда
  * @param {Object} rules активные фильтры
  */
-function onGChangeFilterValue(rows, rules){
+function onGChangeFilterValue(rows, rules) {
     const els = U.queryEls(`${root} [guide-row]`);
 
     els.forEach((el) => {
         const index = U.getAttr(el, 'index');
-        if(index >= rows.length) return;
+        if (index >= rows.length) return;
         const row = rows[index];
         let isVisible = true;
         for (var fieldName of Object.keys(rules)) {
             const value = rules[fieldName];
-            if(value == undefined) continue;
-            switch(value.type){
+            if (value == undefined) continue;
+            switch (value.type) {
                 case 'text':
                     isVisible &= row[fieldName].text.toLowerCase().indexOf(value.value) >= 0;
-                break;
+                    break;
                 case 'string':
                     isVisible &= row[fieldName].toLowerCase().indexOf(value.value) >= 0;
-                break;
+                    break;
                 case 'enum':
                     let isHase = false;
-                    for(const v of value.value){
-                        if(v === row[fieldName]){
+                    for (const v of value.value) {
+                        if (v === row[fieldName]) {
                             isHase = true;
                             break;
                         }
                     }
                     isVisible &= isHase;
-                break;
+                    break;
                 case 'multiEnum':
                     let isHasm = false;
                     const fieldValues = row[fieldName].split(',');
-                    for(const v of value.value){
-                        for(const f of fieldValues){
-                            if(v === f){
+                    for (const v of value.value) {
+                        for (const f of fieldValues) {
+                            if (v === f) {
                                 isHasm = true;
                                 break;
                             }
                         }
-                        if(isHasm) break;
+                        if (isHasm) break;
                     }
                     isVisible &= isHasm;
-                break;
+                    break;
                 default:
                     throw new Errors.InternalError('errors-unexpected-switch-argument', [filter.type]);
             };

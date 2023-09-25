@@ -30,5 +30,7 @@ module.exports = {
     remove_rows: 'Удалить запись',
     resize_fields: 'Сделать высоту полей записи по содержимому',
     compress_fields: 'Сделать высоту полей записи по умолчанию',
+    compress_all_fields: 'Сделать высоту всех полей записи по умолчанию',
+    resize_all_fields: 'Сделать высоту всех полей записи по содержимому',
     filter_panel_header: 'Фильтры',
 };

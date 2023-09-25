@@ -247,7 +247,16 @@ const getSelectedRadio = function (el, query) {
     return queryElEls(el, query).find(R.prop('checked'));
 };
 
-// const debugInterceptor = function (callback) {
+/**Функция постановки программы на паузу. Она-же позволяет сменить потоки
+ * await this.sleep(10); - задержит программу на 10 мс
+ * @param {number} ms количество мс на которое программа застывает
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+  // const debugInterceptor = function (callback) {
 //     return function () {
 //         console.log(JSON.stringify(arguments[0]));
 //         callback(...arguments);
@@ -256,7 +265,7 @@ const getSelectedRadio = function (el, query) {
 /**Набор утилит на всю программу */
 const U = {
     setAttr, nl2array, qees, addEl, clearEl, makeText, getAttr,
-    queryEls, queryEl, addClass, listen,
+    queryEls, queryEl, addClass, listen, 
 
     qe,qee, wrapEl, qte,listenOnEnter, makeEl, fillSelector,
     addEls, clearEls, qmte, showEl, passEls, setProp, qes,queryElEl,
@@ -272,7 +281,9 @@ const U = {
     // constL10n,
 
     // strFormat,
-    isEmpty, addClasses, hasClass, removeClass, toggleClass
+    isEmpty, addClasses, hasClass, removeClass, toggleClass,
+
+    sleep
 };
 
 module.exports = U;

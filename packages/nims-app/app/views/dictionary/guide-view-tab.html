@@ -17,11 +17,13 @@
         </div>
       </div>
       <!--Панелька с отображением записей выбранного справочника-->
-      <div class="col-xs-9 content-column height-100p" style="overflow-x: auto;">
+      <div class="col-xs-9 content-column height-100p guide-right-panel" style="overflow-x: auto;">
         <!--Панелька с фильтром-->
         <div class="panel panel-default guide-filter-panel">
           <div class="panel-heading">
-            <a href="#/" panel-toggler=".guide-filter-panel div.guide-filter-panel-body" class="expanded"> <h3 class="panel-title" l10n-id="dictionary-filter_panel_header"></h3> </a>
+            <a href="#/" panel-toggler=".guide-filter-panel div.guide-filter-panel-body" class="expanded">
+              <h3 class="panel-title" l10n-id="dictionary-filter_panel_header"></h3>
+            </a>
           </div>
           <div class="panel-body guide-filter-panel-body">
             <!--Таблица всех фильтров-->
@@ -38,6 +40,11 @@
                 l10n-title="dictionary-create_guide_item_title">
                 <span l10n-id="dictionary-create_guide_button_text"></span>
               </button>
+              <div class="margin-right-8 flex-1-1-auto"></div>
+              <div class="flex-0-0-auto">
+                <button class="btn btn-default btn-reduced fa-icon compress event flex-0-0-auto" l10n-title="dictionary-compress_all_fields"></button>
+                <button class="btn btn-default btn-reduced fa-icon resize event flex-0-0-auto" l10n-title="dictionary-resize_all_fields"></button>
+              </div>
             </div>
             <div class="alert-no-items alert alert-info" l10n-id="dictionary-alert_guide_not_items"></div>
           </div>
