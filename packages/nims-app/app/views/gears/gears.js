@@ -1,5 +1,7 @@
 const vis = require('vis');
-require('vis/dist/vis.min.css');
+require('vis/dist/vis.min.css'); 
+//const vis = require('../../../../nims-app-core/libs0000/vis-custom.min.js');
+//require('../../../../nims-app-core/libs0000/vis.min.css');
 require('./gears.css');
 //const Constants = require('dbms/constants');
 //const R = require('ramda');
@@ -139,10 +141,10 @@ exports.refresh = () => {
     }).catch(UI.handleError);
 };
 
-// create a network
-function drawNetwork() {
+//Создать график
+async function drawNetwork() {
     const container = U.qe(`${root} .mynetwork`);
-    U.clearEl(U.queryEl(`${root} .configInner`));
+    //U.clearEl(U.queryEl(`${root} .configInner`));
     const options = {
         locale: L10n.getLocale(),
         locales: Constants.visLocales,
@@ -225,10 +227,21 @@ function drawNetwork() {
         nodes: state.nodesDataset,
         edges: state.edgesDataset
     };
-    state.network = new vis.Network(container, data, options);
-    state.network.on('selectEdge', showEdgeLabelEditor);
-    state.network.on('dragEnd', params => storeData());
-    state.network.on('stabilized', params => storeData());
+    //Если у нас не отображается сейчас график - то мы должны удалить сеть, дабы при следующем открытии
+    //Она создала себя
+    if(container.scrollHeight == container.scrollWidth && container.scrollWidth == 0 ){
+        state.network = undefined;
+    }else if(state.network == undefined) {
+        state.network = new vis.Network(container, undefined, options);
+        await U.sleep(1000);
+        state.network.setData(data);
+        state.network.on('selectEdge', showEdgeLabelEditor);
+        state.network.on('dragEnd', params => storeData());
+        state.network.on('stabilized', params => storeData());
+    } else {
+        state.network.setData(data);
+        state.network.redraw();
+    }
 }
 
 function storeData(callback) {
@@ -264,7 +277,7 @@ function showEdgeLabelEditor(params) {
         const edge = state.edgesDataset.get(params.edges[0]);
         U.qee(state.renameEdgeDialog, '.entity-input').value = edge.label || '';
         state.edgeData = edge;
-        state.edgeCallback = state.edgesDataset.update;
+        state.edgeCallback = (data) => state.edgesDataset.update(data);
         state.renameEdgeDialog.showDlg();
     }
 }
@@ -322,7 +335,7 @@ function clearNetwork() {
     UI.confirm(l10n('confirm-clearing'), () => {
         state.nodesDataset.clear();
         state.edgesDataset.clear();
-        storeData(exports.refresh);
+        storeData(() => {state.network = undefined; exports.refresh();});
     });
 }
 
@@ -340,7 +353,6 @@ function fillSearchSelect() {
     arr.sort(CU.charOrdAFactory(a => a.name.toLowerCase()));
     U.fillSelector(U.clearEl(U.queryEl('.search-node')), arr);
 }
-
 function downloadCsv() {
     const arr = state.nodesDataset.map(node => [node.name, node.group, node.notes]);
     const arr2 = state.edgesDataset.map(edge => [state.nodesDataset.get(edge.from).name, edge.label,
@@ -389,6 +401,7 @@ function downloadYED() {
 function onNodeFocus(event) {
     state.network.focus(event.target.value, Constants.snFocusOptions);
 }
+
 
 function renameEdge(dialog) {
     return () => {
