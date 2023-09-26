@@ -18,8 +18,28 @@ exports.init = () => {
     //Слушаем событие добавления записей
     U.listen(U.queryEl(`${root} .create`), 'click', () => { selectRow = selectDictonagy.rows.length; newGuideRow(selectDictonagy.rows.length); });
     U.listen(U.queryEl(`${root} .entity-filter`), 'input', filterOptions);
-    U.listen(U.queryEl(`${root} .compress`), 'click', () => allTextFields.forEach(pair => pair.smal()));
-    U.listen(U.queryEl(`${root} .resize`), 'click', () => allTextFields.forEach(pair => pair.big()));
+    U.hideEl(U.queryEl(`${root} .compress_resize_progress`), true);
+    const CR = async(isResize) => {
+        const label = U.queryEl(`${root} .compress_resize_progress`);
+        U.hideEl(label, false);
+        for (let index = 0; index < allTextFields.length; ++index) {
+            pair = allTextFields[index];
+            if(isResize)
+                pair.big();
+            else
+                pair.smal();
+            if(index % 50 == 0){
+                U.clearEl(label);
+                U.addEl(label, U.makeText(CU.strFormat(L10n.getValue('dictionary-CRprogress'), [(index * 100 / allTextFields.length).toFixed(2)])));
+                await U.sleep(0); //Нужна для отображения на экране изменений. Чтобы прогресс реально шёл
+            }
+        }
+        selectRow = -1;
+        exports.refresh();
+        U.hideEl(label, true);
+    }
+    U.listen(U.queryEl(`${root} .compress`), 'click', () => CR(true));
+    U.listen(U.queryEl(`${root} .resize`), 'click', () => CR(false));
 };
 
 
@@ -230,7 +250,7 @@ function appendRowToTable(guide, scheme, row) {
 
                 U.listen(U.qee(el, '.resize'), 'click', smal);
                 U.listen(U.qee(el, '.compress'), 'click', big);
-                allTextFields.push({ smal: smal, big: big });
+                allTextFields.push({ smal: smal, big: () => onGChangeFieldValue(guide.name, index, undefined, obj.type, input, obj.name, -1)(undefined) });
                 break;
             case 'string':
                 input = U.makeEl('input');
