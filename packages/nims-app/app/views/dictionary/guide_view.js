@@ -125,8 +125,6 @@ function selectGuide(guideName) {
         const [guide] = results;
         selectDictonagy = guide;
         U.hideEl(U.queryEl(`${root} .guide-filter-panel`), guide.rows.length === 0);
-        U.hideEl(U.queryEl(`${root} .compress`), guide.rows.length === 0);
-        U.hideEl(U.queryEl(`${root} .resize`), guide.rows.length === 0);
         if (guide.rows.length != 0 && !U.hasClass(U.queryEl(`${root} .guide-filter-panel div.panel-body`), 'hidden'))
             U.queryEl(`${root} .guide-filter-panel h3.panel-title`).click();
         U.hideEl(U.queryEl(`${root} .alert-no-items`), guide.rows.length != 0);
@@ -149,6 +147,10 @@ function selectGuide(guideName) {
         //А теперь попробуем позаполнять табличку
         const tableFilterRows = guide.scheme.map(row => appendRowFilterToTable(guide, row));
         R.ap([U.addEl(tableFilters)], tableFilterRows);
+
+        //А теперь отобразим кнопки сжатия и растяжения всех текстовых полей разом
+        U.hideEl(U.queryEl(`${root} .compress`), guide.rows.length === 0 || allTextFields.length === 0);
+        U.hideEl(U.queryEl(`${root} .resize`), guide.rows.length === 0 || allTextFields.length === 0);
 
         //Отматываем на нужную строку справочника
         let scrollTo;
