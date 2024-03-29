@@ -62,10 +62,16 @@ const logModule = require('../front-db/consoleLogModule');
 // const CallNotificator = require('front-db/callNotificator');
 
 let firstBaseLoad = PRODUCT === 'STANDALONE';
-
+//Определяем функцию иницализации НИМСа
 if (PRODUCT === 'STANDALONE') {
     exports.onPageLoad = () => {
         initPage();
+        //А теперь добавим слушатель к событию изменения высоты шапки. Чтобы всегда шапка была выше основной таблицы
+        new ResizeObserver((e) => {
+            const header = U.queryEl('#navigation');
+            const area = U.queryEl('#contentArea');
+            area.style.marginTop = header.offsetHeight + "px";
+        }).observe(U.queryEl('#navigation'));
         window.DBMS = DbmsFactory({
             logModule,
             projectName: PROJECT_NAME,
