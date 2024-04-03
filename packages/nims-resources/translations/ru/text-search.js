@@ -8,6 +8,7 @@ module.exports = {
     writerStory: 'Мастерские истории',
     eventOrigins: 'Оригиналы событий',
     eventAdaptations: 'Адаптации событий',
+    guidesSearch: 'Справочники',
     find: 'Найти',
     'case-sensitive-search': 'Регистрозависимый поиск',
 };

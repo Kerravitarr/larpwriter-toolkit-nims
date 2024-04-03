@@ -178,7 +178,7 @@ const getChecks = {
         args: {
             searchStr: 'Арагорн',
             textTypes: ['characterProfiles', 'playerProfiles', 'groups', 'relations', 'writerStory', 'eventOrigins',
-                'eventAdaptations'],
+                'eventAdaptations','guidesSearch'],
             caseSensitive: false
         },
     }],

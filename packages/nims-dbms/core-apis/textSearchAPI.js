@@ -15,10 +15,12 @@ See the License for the specific language governing permissions and
 
 ((callback2) => {
     function textSearchAPI(LocalDBMS, opts) {
-        const {
-            R, Constants, Errors, CU, PC
-        } = opts;
+        const { R, Constants, Errors, CU, PC} = opts;
 
+        //type SearchFunction = (textType:sting, test, database) => string[];
+        /**Объект, где каждое поле - функция поиска в базе данных 
+         * @type {v: SearchFunction} 
+        */
         const searchers = {};
 
         //        LocalDBMS.prototype.getTextsTest = function(searchStr, textTypes, caseSensitive, callback){
@@ -60,6 +62,13 @@ See the License for the specific language governing permissions and
         //      },
         //  ]
         // eslint-disable-next-line func-names
+        /**Ищет текст во всех объектах
+         * @param {{searchStr: string, textTypes:Array<string>, caseSensitive:boolean}} - искомый текст
+         * @param {string} searchStr - искомый текст
+         * @param {Array<string>} textTypes - список объектов в которых ищем текст
+         * @param {boolean} caseSensitive - регистро зависимый поиск?
+         * @returns {Promise<{textType:string,result:Array<{name:string,type:'text'|'string',text:string}>}>} объект в виде вектора, в котором записаны все найденые строки
+         */
         LocalDBMS.prototype.getTexts = function ({ searchStr, textTypes, caseSensitive } = {}) {
             return new Promise((resolve, reject) => {
                 const textTypesPrecondition = PC.elementsFromEnum(R.__, R.keys(searchers));
@@ -80,7 +89,12 @@ See the License for the specific language governing permissions and
                 });
             });
         };
-
+        /**Функция форматирования найденого текста
+         * @param {string} name заголовок, где нашли?
+         * @param {string} type тип... Поддерживатеся только text/string... Тогда зачем? О_О
+         * @param {string} text текст, который нашли
+         * @returns 
+         */
         const format = (name, type, text) => ({
             name,
             type,
@@ -142,6 +156,38 @@ See the License for the specific language governing permissions and
                 return arr;
             }));
         };
+        /**Функция поиска в гайде
+         * @param {string} textType текущий тип.
+         * @param {(string) => string} test функция соответствия слов
+         * @param {db} database вся база данных
+         * @returns {Array<format>}
+         */
+        searchers.guidesSearch = (textType, test, database) => {
+            const guides = database.Guides;
+            const getText = (row_value) =>{
+                if(typeof row_value == "string"){
+                    return row_value;
+                } else if(row_value.text != undefined){
+                    return row_value.text;
+                } else {
+                    return null;
+                }
+            };
+            return R.flatten(R.values(guides).map((guide) => {
+                return guide.rows.map((r, index) => {
+                    const transform = [];
+                    for (let fieldName in r) {
+                        if (r.hasOwnProperty(fieldName))
+                            transform.push({row: r, name:fieldName, value: r[fieldName], index:index});
+                    }
+                    return transform;
+                }).flat().filter(o =>{
+                    const text = getText(o.value);
+                    if(text == null) return false;
+                    else return test(text);
+                }).map(o => format(`${guide.name} / №${o.index + 1} / ${o.name}`, 'text', getText(o.value)));
+            }));
+        }
     }
     callback2(textSearchAPI);
 })(api => (typeof exports === 'undefined' ? (this.textSearchAPI = api) : (module.exports = api)));

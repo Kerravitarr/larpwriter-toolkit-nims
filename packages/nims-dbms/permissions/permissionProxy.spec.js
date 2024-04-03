@@ -318,7 +318,8 @@ const getChecks = {
                     'relations',
                     'writerStory',
                     'eventOrigins',
-                    'eventAdaptations'
+                    'eventAdaptations',
+                    'guidesSearch'
                 ],
                 caseSensitive: false
             },

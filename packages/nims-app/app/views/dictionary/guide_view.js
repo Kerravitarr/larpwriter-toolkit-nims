@@ -328,6 +328,7 @@ function appendRowToTable(guide, scheme, row) {
             DBMS.removeGuideRow({ guideName: selectDictonagy.name, index: index }).then(() => { selectRow = index - 1; selectGuide(guide.name); }).catch((err) => UI.setError(dialog, err));
         });
     });
+    U.addEl(U.qee(el, '.guide_div_row_num'), U.makeText('№' + (index + 1)));
     return el;
 }
 /**Сооружает строку таблицы фильтров и возвращает её
