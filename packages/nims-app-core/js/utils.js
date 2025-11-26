@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 
 // TODO need to lint utils with NIMS fixes
 /* eslint-disable */
+const R = require('ramda');
 
 function isEmpty(obj) {
     return (Object.getOwnPropertyNames(obj).length === 0);
@@ -94,6 +95,11 @@ function queryEls(sel) {
 
 const qes = queryEls;
 
+/**Найти первый элемент в документе, соответствующий указанному CSS-селектору
+ * @param {*} el элемент
+ * @param {string} sel селектор
+ * @returns {HTMLElement}
+ */
 function queryElEl(el, sel) {
     return el.querySelector(sel);
 }
@@ -109,28 +115,38 @@ const qees = R.curry(queryElEls);
 // function getEls(clazz) {
 //     return document.getElementsByClassName(clazz);
 // }
-
+/** Создаёт элемент с заданным тэгом
+ * @param {string} elTag название тега
+ * @returns {HTMLElement} новый элемент
+ */
 function makeEl(elTag) {
     return document.createElement(elTag);
 }
 
-const wrapEl = R.curry((elTag, el) => {
+const wrapEl = R.curry(
+    /** @param {string} elTag тэг нового элемента  @param {HTMLElement} el кого добавить на этот элемент * @returns {HTMLElement} новый созданнй элемент  */
+    (elTag, el) => {
     return U.addEl(U.makeEl(elTag), el);
 })
 
 // const wrapEls = R.curry((elTag, els) => {
 //     return U.addEls(U.makeEl(elTag), els);
 // })
-
+/**Создать элемент DOM <text>
+ * @param {string} text текст, который должен содержаться в элементе
+ * @returns {Text} 
+ */
 function makeText(text) {
     return document.createTextNode(text);
 }
 
 // exports.makeText = makeText;
 
-const addEl = R.curry((parent, child) => {
-    parent.appendChild(child);
-    return parent;
+const addEl = R.curry(
+    /** @param {HTMLElement} parent родительский элемент @param {HTMLElement} child дочерний элемент * @returns {HTMLElement} родительский элемент  */
+    (parent, child) => {
+        parent.appendChild(child);
+        return parent;
 });
 const addEls = R.curry((parent, children) => {
     R.ap([U.addEl(parent)], children);
@@ -198,17 +214,17 @@ function passEls(src, dst) {
         U.addEl(dst, src.children[i]);
     }
 }
-/**
- * Создаёт слушателя события для элемента
- * @param {Node} el элемент, который слушаем
- * @param {string} event название события, которое слушаем
- * @param {function} listener функция, которая сработает от события.
- *          В функцию будет передан объект - event. 
+/**Добавляет слушателя к элементу
+ * @param {Node} el элемент 
+ * @param {string} event событие, которое мы слушаем 
+ * @param {EventListenerOrEventListenerObject | null} listener слушатель события, что надо сделать, когда событие произошло
+ * @returns 
  */
-const listen = R.curry((el, event, listener) => {
+function addEventListener(el, event, listener){
     el.addEventListener(event, listener);
     return el;
-});
+}
+const listen = R.curry(addEventListener);
 
 const listenOnEnter = R.curry((el, callback) => {
     U.listen(el, 'keydown', (e) => {
@@ -265,7 +281,15 @@ function sleep(ms) {
 /**Набор утилит на всю программу */
 const U = {
     setAttr, nl2array, qees, addEl, clearEl, makeText, getAttr,
-    queryEls, queryEl, addClass, listen, 
+    queryEls, queryEl, addClass, 
+    /**
+     * Создаёт слушателя события для элемента
+     * @param {Node} el элемент, который слушаем
+     * @param {string} event название события, которое слушаем
+     * @param {EventListenerOrEventListenerObject|null} listener функция, которая сработает от события.
+     *          В функцию будет передан объект - event. 
+     */
+    listen, 
 
     qe,qee, wrapEl, qte,listenOnEnter, makeEl, fillSelector,
     addEls, clearEls, qmte, showEl, passEls, setProp, qes,queryElEl,

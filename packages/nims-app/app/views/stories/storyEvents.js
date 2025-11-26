@@ -17,6 +17,7 @@ See the License for the specific language governing permissions and
  */
 
 const PermissionInformer = require('permissionInformer');
+const U = require('../../../../nims-app-core/js/utils');
 //const R = require('ramda');
 
 
@@ -139,6 +140,8 @@ module.exports = (Stories) => {
         L10n.localizeStatic(el);
         const qe = U.qee(el);
         U.addEl(qe('.event-number'), U.makeText(index + 1));
+        const chars_counter = U.makeText("Символов: " + event.text.length.toLocaleString());
+        U.addEl(qe('.event-count-chars'),chars_counter);
         const nameInput = qe('.event-name-input');
         nameInput.value = event.name;
         nameInput.eventIndex = index;
@@ -147,7 +150,10 @@ module.exports = (Stories) => {
         const textInput = qe('.event-text');
         textInput.value = event.text;
         textInput.eventIndex = index;
-        U.listen(textInput, 'change', updateEventText);
+        U.listen(textInput, 'change', e => {
+            updateEventText(e);
+            chars_counter.textContent = "Символов: " + e.target.value.length.toLocaleString();
+        });
 
         UI.makeEventTimePicker2(qe('.event-time'), {
             eventTime: event.time,
@@ -249,6 +255,9 @@ module.exports = (Stories) => {
         };
     }
 
+    /**Слушает события обновления названия события, чтобы записать его в БД
+     * @param {Event} event событие обновления текста
+     */
     function updateEventName(event) {
         const input = event.target;
         DBMS.setEventOriginProperty({
@@ -258,7 +267,9 @@ module.exports = (Stories) => {
             value: input.value
         }).then(exports.refresh, UI.handleError);
     }
-
+    /**Слушает события обновления текста события, чтобы записать его в БД
+     * @param {Event} event событие обновления текста
+     */
     function updateEventText(event) {
         const input = event.target;
         DBMS.setEventOriginProperty({

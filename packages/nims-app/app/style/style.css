@@ -547,7 +547,7 @@ textarea.game-description-area {
 .event-time, .adaptationTimeInput,
 .time-input{
   width: 180px;
-/*   display: inline-block; */
+   display: inline-block; 
 }
 
 #debugNotification{
