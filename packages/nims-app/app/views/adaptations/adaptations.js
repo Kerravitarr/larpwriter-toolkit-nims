@@ -19,6 +19,7 @@ See the License for the specific language governing permissions and
 
 const PermissionInformer = require('permissionInformer');
 //const R = require('ramda');
+const U = require('../../../../nims-app-core/js/utils');
 
 const root = '.adaptations-tab ';
 
@@ -284,6 +285,7 @@ exports.makeOriginCard = (event, metaInfo, storyName, opts) => {
     const textInput = U.qee(card, '.text-input');
     const timeInput = U.qee(card, '.time-input');
     const lockButton = U.qee(card, 'button.locked');
+    const count_chars = U.qee(card, '.card-count-chars');
 
     if (opts.showTimeInput === true) {
         UI.makeEventTimePicker2(timeInput, {
@@ -300,9 +302,14 @@ exports.makeOriginCard = (event, metaInfo, storyName, opts) => {
     if (opts.showTextInput === true) {
         textInput.value = event.text;
         textInput.dataKey = JSON.stringify([storyName, event.index]);
-        U.listen(textInput, 'change', onChangeOriginText);
+        count_chars.textContent = "Символов: " + event.text.length.toLocaleString();
+        U.listen(textInput, 'change', e => {
+            count_chars.textContent = "Символов: " + e.target.value.length.toLocaleString(),
+            onChangeOriginText(e);
+        });
     } else {
         U.addClass(textInput, 'hidden');
+        U.addClass(count_chars, 'hidden');
     }
 
     if (opts.showLockButton === true) {
@@ -334,6 +341,7 @@ exports.makeAdaptationCard = R.curry((isEditable, event, storyName, characterNam
     U.setAttr(card, 'dependent-on-character', characterName);
 
     U.addEl(U.qee(card, '.card-title'), U.makeText(opts.cardTitle));
+    //card-count-chars
     const textInput = U.qee(card, '.text-input');
     const timeInput = U.qee(card, '.time-input');
     const finishedButton = U.qee(card, 'button.finished');

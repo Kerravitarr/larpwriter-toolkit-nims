@@ -901,6 +901,9 @@ a[tree-panel-toggler] h3{
 .card-title {
   padding: 7px 0 0 0;
 }
+.card-count-chars{
+  padding: 7px 7px 0 0;
+}
 
 #templateArea, 
 #textBriefingPreviewArea{
