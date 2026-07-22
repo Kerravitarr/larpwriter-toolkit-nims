@@ -211,6 +211,7 @@ function makeLoadBaseButton() {
     const button = makeButton('dataLoadButton icon-button', 'open-database', null, btnOpts);
     const input = U.makeEl('input');
     input.type = 'file';
+    input.accept=".json";
     U.addClass(input, 'hidden');
     U.setAttr(input, 'tabindex', -1);
     button.appendChild(input);
